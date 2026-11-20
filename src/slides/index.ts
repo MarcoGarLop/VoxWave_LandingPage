@@ -8,7 +8,7 @@ const modules = import.meta.glob<Record<string, unknown>>('./S*.tsx', { eager: t
  * → the app → the device → "…and we built it" (live demo) → how it works → the evidence → impact…
  * Slides not listed here follow at the end, in id order.
  */
-const ORDER = ['S01', 'S02', 'S03', 'S04', 'S04B', 'S05', 'S07', 'S08', 'S06'];
+const ORDER = ['S02', 'S02B', 'S01', 'S03', 'S03E', 'S04B', 'S05', 'S07', 'S08', 'S06'];
 
 const all = Object.values(modules).flatMap((m) =>
   Object.values(m).filter((v): v is SlideDef => !!v && typeof v === 'object' && 'builds' in v),

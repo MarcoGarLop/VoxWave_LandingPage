@@ -72,13 +72,11 @@ function view(x: number, y: number, z: number, t: number, out: number[]) {
   out[2] = y * sp + z1 * cp;
 }
 
-type Phase = 'spain' | 'world' | 'future' | 'cost';
+type Phase = 'world' | 'spain';
 
-function target(phase: Phase, t0: number): ParticleTarget {
+function target(phase: Phase): ParticleTarget {
   const v = [0, 0, 0];
   return (pos, colr, size, n, t) => {
-    const k = (t - t0); // seconds since this phase began
-    const ignite = clamp((k - 0.6) / 2.6); // 2050: the rest of the world lights up
     for (let i = 0; i < n; i++) {
       let c = col.paper, a = 0, s = 1;
       if (i < G) {
@@ -93,19 +91,11 @@ function target(phase: Phase, t0: number): ParticleTarget {
         const lit = (0.42 + 0.58 * Math.pow(lam, 0.8)) * facing;
         if (phase === 'spain') a = 0;
         else if (spain.has(d.iso)) (c = col.coral), (a = lit), (s = 1.3);
-        else {
-          const today = hash[i] < LIT_TODAY;
-          const future = phase !== 'world' && hash[i] < LIT_TODAY + (1 - LIT_TODAY) * (phase === 'future' ? ignite : 1);
-          // The cost: the whole planet catches fire, spreading out from Spain.
-          if (phase === 'cost') {
-            const on = clamp((k - 0.1 - (order[i] - 0.25) * 2.2) / 0.6);
-            const pulse = 0.86 + 0.14 * Math.sin(t * 2.2 - order[i] * 18);
-            const glow = Math.max(0.62, lit) * facing;
-            (c = on > 0.5 ? col.coral : col.paper), (a = glow * pulse * (0.45 + 0.55 * on)), (s = 1.15 + 0.3 * on);
-          } else if (today) (c = col.paper), (a = lit), (s = 1.15);
-          else if (future) (c = col.hot), (a = lit), (s = 1.15);
-          else (c = col.paper), (a = 0.13 * lit), (s = 0.95);
-        }
+        else if (hash[i] < LIT_TODAY) {
+          // One lit dot ≈ people living with Parkinson's; they twinkle softly.
+          const tw = 0.85 + 0.15 * Math.sin(t * 1.6 + hash[i] * 40);
+          (c = hash[i] < LIT_TODAY * 0.35 ? col.soft : col.paper), (a = lit * tw), (s = 1.2);
+        } else (c = col.paper), (a = 0.13 * lit), (s = 0.95);
       } else {
         const m = map[i - G];
         if (!m) {
@@ -137,21 +127,35 @@ function target(phase: Phase, t0: number): ParticleTarget {
   };
 }
 
-const PHASES: Phase[] = ['spain', 'world', 'future', 'cost'];
+const PHASES: Phase[] = ['world', 'spain'];
+
+/** A faint cloud of dots around where the globe will be. */
+function starfield(pos: Float32Array, colr: Float32Array, n: number) {
+  for (let i = 0; i < n; i++) {
+    const h1 = Math.sin(i * 78.233) * 43758.5453, h2 = Math.sin(i * 39.425) * 24634.6345;
+    const a = (h1 - Math.floor(h1)) * Math.PI * 2;
+    const r = 260 + Math.sqrt(h2 - Math.floor(h2)) * 900;
+    pos[i * 3] = GLOBE.cx + Math.cos(a) * r;
+    pos[i * 3 + 1] = GLOBE.cy + Math.sin(a) * r * 0.62;
+    pos[i * 3 + 2] = 0;
+    colr[i * 4] = colr[i * 4 + 1] = colr[i * 4 + 2] = 1;
+    colr[i * 4 + 3] = 0;
+  }
+}
 
 function particles(b: number) {
   data();
   const phase = PHASES[b];
   const now = clock.t;
-  if (b === 1) spinFrom = now; // the turn starts as the globe forms
-  if (b === 0) spinFrom = now + 1e6; // still while Spain is on screen
+  if (b === 0) spinFrom = now; // the globe turns as it forms, and never stops
   return {
-    seed: b === 0 ? ('wave' as const) : undefined,
+    // The deck opens on a dark sky: the dots gather out of it into the planet.
+    seed: b === 0 ? starfield : undefined,
     state: {
-      target: target(phase, now),
-      duration: b === 0 ? 4200 : b === 1 ? 3800 : 1600,
-      scatter: b === 0 ? 0.55 : b === 1 ? 0.6 : 0.2,
-      order: b === 1 ? order : undefined,
+      target: target(phase),
+      duration: b === 0 ? 4000 : 2800,
+      scatter: b === 0 ? 0.6 : 0.45,
+      order: b === 0 ? order : undefined,
       size: 3.1,
     },
   };
@@ -159,17 +163,15 @@ function particles(b: number) {
 
 // ---------- The numbers: they arrive one by one and none ever leaves ----------
 const FACTS = [
-  { label: 'Spain', to: 200000, fmt: (v: number) => `${(Math.round(v / 1000) * 1000).toLocaleString('en-US')}+`, body: 'people living with Parkinson’s', src: 'SEN 2026' },
-  { label: 'World, today', to: 11.8, fmt: (v: number) => `${v.toFixed(1)}M`, body: 'people with Parkinson’s', src: 'GBD 2021' },
-  { label: 'World, 2050', to: 25.2, fmt: (v: number) => `${v.toFixed(1)}M`, body: 'the fastest-growing neurological disease', src: 'BMJ 2025' },
-  { label: 'The cost', to: 115, fmt: (v: number) => `$${Math.round(v)}B+`, body: 'a year, in the US and Europe alone', src: 'MJFF 2024 · EAN 2026' },
+  { label: 'The world', to: 11.8, fmt: (v: number) => `${v.toFixed(1)}M`, body: 'people live with Parkinson’s', sub: 'The fastest-growing neurological disease', src: 'GBD 2021' },
+  { label: 'Spain', to: 200000, fmt: (v: number) => `${(Math.round(v / 1000) * 1000).toLocaleString('en-US')}+`, body: 'of them live in Spain', sub: '', src: 'SEN 2026' },
 ];
 
 function Fact({ i, latest }: { i: number; latest: boolean }) {
   const f = FACTS[i];
   return (
     <motion.div
-      style={{ position: 'absolute', left: 120, top: 92 + i * 232, width: 760 }}
+      style={{ position: 'absolute', left: 120, top: 150 + i * 360, width: 820 }}
       initial={{ opacity: 0, x: -24, filter: 'blur(12px)' }}
       animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
       exit={{ opacity: 0, transition: { duration: 0.4 } }}
@@ -179,16 +181,21 @@ function Fact({ i, latest }: { i: number; latest: boolean }) {
         {f.label}
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 22, marginTop: 6 }}>
-        <span className="number" style={{ fontSize: 112, lineHeight: 1, color: latest ? 'var(--coral)' : 'var(--paper)', transition: 'color 1.4s' }}>
+        <span className="number" style={{ fontSize: 136, lineHeight: 1, color: latest ? 'var(--coral)' : 'var(--paper)', transition: 'color 1.4s' }}>
           <Counter to={f.to} duration={1.9} delay={0.25} format={f.fmt} />
         </span>
       </div>
-      <div className="body" style={{ fontSize: 24, marginTop: 10 }}>
+      <div className="display" style={{ fontSize: 34, fontWeight: 600, marginTop: 12 }}>
         {f.body}
         <span className="mono" style={{ fontSize: 11, marginLeft: 14, opacity: 0.6 }}>
           {f.src}
         </span>
       </div>
+      {f.sub && (
+        <div className="body" style={{ fontSize: 24, marginTop: 12, color: 'var(--ink-70)' }}>
+          {f.sub}
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -207,11 +214,11 @@ function Content({ build }: { build: number }) {
 
 export const S02: SlideDef = {
   id: 'S02',
-  builds: 4,
-  auto: [4.6, 4.4, 4.4],
+  builds: 2,
+  auto: [5.2],
   notes:
-    "María is one of more than two hundred thousand people with Parkinson's in Spain. Almost twelve million worldwide, and twenty-five million by 2050: it is the fastest-growing neurological disease. And it already costs more than a hundred and fifteen billion dollars a year, in the US and Europe alone.",
-  // The voice breaks into the points of light that draw Spain.
+    "Nearly twelve million people in the world live with Parkinson's. It is the fastest-growing neurological disease. More than two hundred thousand of them live here, in Spain.",
+  // The deck opens in the dark: the planet, then Spain.
   wave: () => ({ shape: wave({ y: 702, amp: 52 }), opacity: 0, duration: 1600, stagger: 0 }),
   particles,
   bg: (b) => ({ pool: [0.71, 0.5], poolStrength: b === 0 ? 0.95 : 1.15, warm: b === 0 ? 0.7 : 0.4 }),

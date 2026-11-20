@@ -206,6 +206,13 @@ export class Wave {
   }
 
   update(t: number, now: number) {
+    // Fully hidden and settled (e.g. on the globe or the calendar): skip the work.
+    const sc = this.scalCur, st = this.scalTgt;
+    if (now - this.start > this.duration && sc.opacity < 0.003 && st.opacity < 0.003 && sc.spark < 0.002 && st.spark < 0.002) {
+      this.main.mesh.visible = this.aura.mesh.visible = this.spark.visible = false;
+      this.echoes.forEach((r) => (r.mesh.visible = false));
+      return;
+    }
     const p = clamp((now - this.start) / this.duration);
     const s = this.stagger;
 

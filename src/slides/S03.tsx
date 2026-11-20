@@ -84,7 +84,12 @@ function people(t0: number): ParticleTarget {
 function Content() {
   return (
     <div className="content">
-      <div className="text-col" style={{ top: 300 }}>
+      <div className="text-col" style={{ top: 230, width: 900 }}>
+        <Fade delay={1.2}>
+          <div className="display" style={{ fontSize: 48, fontWeight: 600, color: 'var(--ink-70)', marginBottom: 26 }}>
+            She’s not alone.
+          </div>
+        </Fade>
         <Fade delay={2.2}>
           <p className="body" style={{ fontSize: 40, marginBottom: 6 }}>
             Nearly
@@ -93,8 +98,8 @@ function Content() {
         <div className="number coral" style={{ fontSize: 190 }}>
           <Words text="9 in 10" delay={2.4} stagger={0.12} />
         </div>
-        <h2 className="display d-64" style={{ marginTop: 18 }}>
-          <Words text="lose part of their voice." delay={4.6} />
+        <h2 className="display" style={{ marginTop: 18, fontSize: 56, lineHeight: 1.1, width: 740 }}>
+          <Words text="people with Parkinson’s develop voice changes." delay={4.4} />
         </h2>
         <Fade delay={5.4}>
           <div className="mono" style={{ fontSize: 14, marginTop: 26 }}>
@@ -110,10 +115,11 @@ export const S03: SlideDef = {
   id: 'S03',
   builds: 1,
   notes:
-    "And nearly nine in ten of them will lose part of their voice.",
-  // The thread stays quiet: the world's points become ten people.
+    "And she's not alone: nearly nine in ten people with Parkinson's develop voice changes.",
+  // María's voice breaks into points of light that become ten people.
   wave: () => ({ shape: wave({ y: 702, amp: 40 }), opacity: 0, duration: 1600, stagger: 0 }),
   particles: () => ({
+    seed: 'wave' as const,
     state: { target: people(clock.t), duration: 2400, scatter: 0.5, size: 3.1 },
   }),
   bg: () => ({ pool: [0.7, 0.5], poolStrength: 1, warm: 0.8 }),

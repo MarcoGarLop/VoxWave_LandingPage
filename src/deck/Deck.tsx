@@ -87,8 +87,8 @@ export function Deck() {
     e.setWave(s.wave(pos.b), first.current);
     const ps = s.particles?.(pos.b) ?? null;
     e.setParticles(ps?.state ?? null, {
-      seed: ps?.seed && forward && !first.current ? ps.seed : undefined,
-      instant: first.current,
+      seed: ps?.seed && ((forward && !first.current) || (first.current && typeof ps.seed === 'function')) ? ps.seed : undefined,
+      instant: first.current && typeof ps?.seed !== 'function',
     });
     e.setDevice(s.device?.(pos.b) ?? null, first.current);
     if (p0.i !== pos.i) slides[p0.i].onLeave?.();
