@@ -48,7 +48,7 @@ export const S04B: SlideDef = {
   // The voice charges up across the whole width; then the page dawns over it.
   auto: [3.0],
   notes:
-    "This is VoxWave.",
+    "So we decided to listen. This is VoxWave.",
   theme: (b) => (b === 1 ? 'light' : 'dark'),
   wave: (b) => ({
     // Three voices braided together, the energy building — never squeezed into a point.

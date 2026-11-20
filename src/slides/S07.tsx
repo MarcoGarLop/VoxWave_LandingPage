@@ -225,7 +225,7 @@ export const S07: SlideDef = {
   // The question holds for a breath; then the clips drive the rhythm themselves.
   auto: [3.6, Infinity, Infinity],
   notes:
-    "But what about older people in rural areas, or without a good connection? [device] We thought of them. A button, a screen, a microphone and a battery: about thirty euros of parts, and no internet needed. Sessions are stored on the device and sync at each check-up. [black] …and we built it. [ENTER → live demo]",
+    "But what about people in rural areas, or with no internet? [device] We thought of them too. One button, a screen, a microphone and a battery. About thirty euros of parts, and no connection needed: sessions sync at each check-up. [black] …and we built it. [ENTER → live demo]",
   theme: (b) => (b === 0 || b === 3 ? 'black' : 'dark'),
   // "…and we built it." → Enter opens the live clinician dashboard.
   link: (b) => (b === 3 ? 'https://vox-wave-demo.vercel.app/clinic/dashboard' : undefined),

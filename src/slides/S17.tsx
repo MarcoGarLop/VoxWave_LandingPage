@@ -330,7 +330,7 @@ export const S17: SlideDef = {
   builds: 2,
   auto: [12.5],
   notes:
-    "On Thursday we had a box of parts. By one in the morning, a working device. Meanwhile, researchers in Estonia and Lithuania wrote back, the Navarra Parkinson's Association called it a very interesting project, and the neurology team at Gregorio Marañón told us the need is real and so is the market. And we learned so much that we wrote a paper. Our model could cheat by hearing the room, so we remove the room. Trained only on Spanish, it works in English with no retraining: a new language is a calibration, not a new product. And it follows how severe the disease is, so it measures change, not just yes or no.",
+    "On Thursday we had a box of parts. By one in the morning, a working device. And the replies came in: from Estonia, from Lithuania, from the Navarra Parkinson's Association and from Gregorio Marañón. We learned so much that we wrote a paper. Our model no longer hears the room, it works in English with no retraining, and it measures change, not just yes or no.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

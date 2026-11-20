@@ -115,7 +115,7 @@ export const S03: SlideDef = {
   id: 'S03',
   builds: 1,
   notes:
-    "And she's not alone: nearly nine in ten people with Parkinson's develop voice changes.",
+    "And she's not alone. Nearly nine in ten people with Parkinson's develop voice changes.",
   // María's voice breaks into points of light that become ten people.
   wave: () => ({ shape: wave({ y: 702, amp: 40 }), opacity: 0, duration: 1600, stagger: 0 }),
   particles: () => ({

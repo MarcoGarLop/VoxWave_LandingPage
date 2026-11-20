@@ -217,7 +217,7 @@ export const S02: SlideDef = {
   builds: 2,
   auto: [5.2],
   notes:
-    "Nearly twelve million people in the world live with Parkinson's. It is the fastest-growing neurological disease. More than two hundred thousand of them live here, in Spain.",
+    "Twelve million. That's how many people in the world live with Parkinson's today. It is the fastest-growing neurological disease on the planet. More than two hundred thousand of them live here, in Spain.",
   // The deck opens in the dark: the planet, then Spain.
   wave: () => ({ shape: wave({ y: 702, amp: 52 }), opacity: 0, duration: 1600, stagger: 0 }),
   particles,

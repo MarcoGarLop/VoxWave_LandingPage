@@ -212,7 +212,7 @@ export const S02B: SlideDef = {
   builds: 2,
   auto: [4.4],
   notes:
-    "And yet a neurologist sees them only once or twice a year. In between, things can get much worse, and nobody is watching. These people need a way to monitor how they're doing.",
+    "And yet a neurologist sees them once or twice a year. Two days out of three hundred and sixty-five. In between, things can get much worse: a fall, a bad week, a voice that fades. And nobody is watching. These people need a way to monitor how they're doing.",
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1200, stagger: 0 }),
   particles,
   bg: (b) => ({ pool: [0.5, 0.58], poolStrength: b === 0 ? 0.9 : 0.7, warm: b === 0 ? 0.5 : 0.85 }),

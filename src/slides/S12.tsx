@@ -275,7 +275,7 @@ export const S12: SlideDef = {
   id: 'S12',
   builds: 1,
   notes:
-    "Why now? Patients double by 2050, while neurologists don't. That gap is our market. And clinics, Gregorio Marañón and patient associations all want in.",
+    "Why now? Patients will double by 2050. Neurologists won't. That gap is our market, and hospitals, clinics and patient associations already want in.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

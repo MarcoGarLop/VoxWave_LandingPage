@@ -327,7 +327,7 @@ export const S13: SlideDef = {
   id: 'S13',
   builds: 1,
   notes:
-    "The model is simple. The clinic pays forty euros a month, less than one private neurology visit. María pays nothing. And every hospital stay we help avoid brings back about four thousand four hundred euros.",
+    "The model is simple. The clinic pays forty euros a month per patient: less than a single private neurology visit. María pays nothing. And every hospital stay we help avoid saves about four thousand four hundred euros.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

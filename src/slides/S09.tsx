@@ -304,7 +304,7 @@ export const S09: SlideDef = {
   id: 'S09',
   builds: 1,
   notes:
-    "Here's the impact. María's voice, every day, inside her own baseline. Then it drops. After three weeks of sustained drift, her neurologist gets an alert and her visit moves forward. Treatment is adjusted, and her voice comes back. Without VoxWave, nobody notices until day one hundred and eighty.",
+    "Here's what that means for María. Her voice, every day, inside her own baseline. Then it drops. After three weeks of sustained drift, her neurologist gets an alert, and her visit moves forward. Treatment is adjusted, and her voice comes back. Without VoxWave, nobody would notice until day one hundred and eighty.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

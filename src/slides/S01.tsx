@@ -93,7 +93,7 @@ export const S01: SlideDef = {
   builds: 2,
   auto: [4],
   notes:
-    "María is one of them. She's sixty-eight and lives in Madrid. Lately, her voice has changed: it's softer, flatter, slower. Her family hears it every day. Her neurologist won't hear it for months.",
+    "María is one of them. Sixty-eight, from Madrid. Lately, her voice has changed: softer, flatter, slower. Her family hears it every day. Her neurologist won't hear it for months.",
   bg: () => ({ poolStrength: 1, warm: 1, pool: [0.64, 0.46] }),
   particles,
   wave: (b) => {

@@ -4,7 +4,7 @@ import { C, EASE } from '../brand/tokens';
 import type { SlideDef } from '../deck/types';
 import { countryDots } from '../engine/geo';
 import { wave } from '../engine/shapes';
-import { Words } from '../ui/motion';
+import { At, Counter, Words } from '../ui/motion';
 
 const ease = EASE as unknown as [number, number, number, number];
 
@@ -13,6 +13,7 @@ const ease = EASE as unknown as [number, number, number, number];
  * Year 1: a pin drops on Madrid. Year 2: the road tours Spain, city by city.
  * Year 3: it crosses the Atlantic in one arc, lands in Miami and lights up the
  * Hispanic US — Florida, Texas, the Southwest, California, Chicago, New York.
+ * Build 1: the map dims and the size of each step lands: where we grow.
  */
 
 const NAVY = C.navy, TEAL = C.teal, CORAL = C.coral;
@@ -211,7 +212,52 @@ function StopCard({ s }: { s: Stop }) {
   );
 }
 
-function Content() {
+// ---------- Build 1: where we grow ----------
+const MARKETS = [
+  { label: 'Spain', to: 200000, fmt: (v: number) => `${(Math.round(v / 1000) * 1000).toLocaleString('en-US')}+`, small: 'patients · where we start' },
+  { label: 'US Hispanic community', to: 68, fmt: (v: number) => `${Math.round(v)}M`, small: 'people · highest Parkinson’s incidence' },
+  { label: 'Spanish-speaking world', to: 2.3, fmt: (v: number) => `${v.toFixed(1)}M`, small: 'patients' },
+  { label: 'The world', to: 11.8, fmt: (v: number) => `${v.toFixed(1)}M`, small: 'patients' },
+];
+
+function Grow() {
+  return (
+    <motion.div style={{ position: 'absolute', inset: 0 }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
+      <div style={{ position: 'absolute', left: 120, top: 200 }}>
+        <div className="mono" style={{ fontSize: 18, color: CORAL }}>
+          Where we grow
+        </div>
+        <h2 className="display" style={{ fontSize: 76, color: NAVY, marginTop: 12 }}>
+          <Words text="From Madrid to the world." delay={0.2} />
+        </h2>
+      </div>
+      <div style={{ position: 'absolute', left: 120, right: 120, top: 520, display: 'flex', alignItems: 'flex-start' }}>
+        {MARKETS.map((m, i) => (
+          <motion.div key={m.label} style={{ flex: 1, display: 'flex', alignItems: 'flex-start' }} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease, delay: 0.7 + i * 0.5 }}>
+            <div style={{ flex: 1 }}>
+              <div className="mono" style={{ fontSize: 16, color: TEAL }}>
+                {m.label}
+              </div>
+              <div className="number" style={{ fontSize: 74, lineHeight: 1, marginTop: 10, color: i === MARKETS.length - 1 ? CORAL : NAVY }}>
+                <Counter to={m.to} duration={1.3} delay={0.8 + i * 0.5} format={m.fmt} />
+              </div>
+              <div className="body" style={{ fontSize: 20, color: INK, marginTop: 10, lineHeight: 1.3, paddingRight: 24 }}>
+                {m.small}
+              </div>
+            </div>
+            {i < MARKETS.length - 1 && (
+              <div className="display" style={{ fontSize: 44, color: CORAL, marginTop: 40, padding: '0 28px 0 16px' }}>
+                →
+              </div>
+            )}
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+function Content({ build }: { build: number }) {
   const t = useElapsed();
   const status = t < T.y2 ? 'Year 1' : t < T.arc0 ? 'Year 2' : 'Year 3';
   const ended = t >= T.end;
@@ -221,10 +267,10 @@ function Content() {
         <span style={{ width: 10, height: 10, borderRadius: 5, background: CORAL, display: 'inline-block' }} />
         Go to market
       </div>
-      <motion.div key={status} className="mono" style={{ position: 'absolute', right: 120, top: 62, fontSize: 18, color: TEAL }} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+      <motion.div key={status} className="mono" style={{ position: 'absolute', right: 120, top: 62, fontSize: 18, color: TEAL }} initial={{ opacity: 0, y: 6 }} animate={{ opacity: build >= 1 ? 0 : 1, y: 0 }} transition={{ duration: 0.5 }}>
         {status}
       </motion.div>
-      <div style={{ position: 'absolute', left: 120, top: 104 }}>
+      <div style={{ position: 'absolute', left: 120, top: 104, opacity: build >= 1 ? 0 : 1, transition: 'opacity 0.5s' }}>
         <AnimatePresence mode="wait">
           <motion.h2
             key={ended ? 'end' : 'start'}
@@ -240,19 +286,25 @@ function Content() {
         </AnimatePresence>
       </div>
 
-      <MapLayer t={t} />
-      {STOPS.map((s) => (
-        <StopCard key={s.year} s={s} />
-      ))}
+      <div style={{ position: 'absolute', inset: 0, opacity: build >= 1 ? 0.1 : 1, transition: 'opacity 0.9s ease' }}>
+        <MapLayer t={t} />
+        {STOPS.map((s) => (
+          <StopCard key={s.year} s={s} />
+        ))}
+      </div>
+      <At build={build} at={1}>
+        <Grow key="grow" />
+      </At>
     </div>
   );
 }
 
 export const S15: SlideDef = {
   id: 'S15',
-  builds: 1,
+  builds: 2,
+  auto: [9.6],
   notes:
-    "Our road. Year one: we validate in Madrid. Year two: we scale across Spain with the CE mark. Year three: we cross to the US Hispanic community, sixty-eight million people, with a model that already speaks Spanish.",
+    "Our road. Year one: Madrid. Year two: all of Spain, with the CE mark. Year three: the US Hispanic community, with a model that already speaks Spanish. [grow] From two hundred thousand patients here, to twelve million worldwide.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

@@ -355,7 +355,7 @@ export const S16B: SlideDef = {
   builds: 2,
   auto: [US_AT + 2.6],
   notes:
-    "Today you get one or the other: daily monitoring with a smartwatch or a sensor, or something anyone can use, but only now and then. Never both. Until now. Only VoxWave brings together our own validated model, a personal baseline, Spanish first, and a phone or one button.",
+    "Today you get one or the other: daily monitoring that needs a watch or a sensor, or something anyone can use, but only now and then. Never both. Until now. Only VoxWave combines our own validated model, a personal baseline, Spanish first, and a phone or one button.",
   // No thread on this slide: the sonar carries it alone.
   wave: () => ({ shape: wave({ y: 1010, amp: 10, speed: 0.6 }), paint: coralPaint, opacity: 0, duration: 1200, stagger: 0 }),
   particles: (b) => {

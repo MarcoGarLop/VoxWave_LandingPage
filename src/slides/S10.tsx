@@ -248,7 +248,7 @@ export const S10: SlideDef = {
   id: 'S10',
   builds: 1,
   notes:
-    "We'll prove it with a clinical pilot we're proposing with Gregorio Marañón: sixty patients, six months, against usual care. We'll measure four things: the time to catch a change, emergency admissions, savings, and quality of life. Then we scale: three hundred, then a thousand patients.",
+    "We'll prove it in a clinical pilot we're proposing with Gregorio Marañón: sixty patients, six months, against usual care. We'll measure four things: how fast we catch a change, emergency admissions, savings, and quality of life. Then three hundred patients. Then a thousand.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

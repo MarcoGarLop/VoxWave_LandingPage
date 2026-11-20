@@ -22,10 +22,10 @@ const TEAM = [
   ['Victor', 'Marketing & go-to-market'],
 ];
 
-const NUMBERS: { to: number; fmt: (v: number) => string; label: string }[] = [
-  { to: 200000, fmt: (v) => `${(Math.round(v / 1000) * 1000).toLocaleString('en-US')}+`, label: 'in Spain' },
-  { to: 2.3, fmt: (v) => `${v.toFixed(1)}M`, label: 'Spanish speakers' },
-  { to: 11.8, fmt: (v) => `${v.toFixed(1)}M`, label: 'in the world' },
+const NUMBERS: { to: number; fmt: (v: number) => string; label: string; src: string }[] = [
+  { to: 11.8, fmt: (v) => `${v.toFixed(1)}M`, label: 'live with Parkinson’s today', src: 'GBD 2021' },
+  { to: 25.2, fmt: (v) => `${v.toFixed(1)}M`, label: 'with Parkinson’s by 2050', src: 'BMJ 2025' },
+  { to: 101, fmt: (v) => `${Math.round(v)}M`, label: 'live after a stroke', src: 'World Stroke Organization 2022' },
 ];
 
 function Content({ build }: { build: number }) {
@@ -33,19 +33,25 @@ function Content({ build }: { build: number }) {
     <div className="content">
       <At build={build} at={0} until={1}>
         <motion.div key="maria" style={{ position: 'absolute', inset: 0 }} exit={{ opacity: 0, transition: { duration: 0.6 } }}>
-          <div style={{ position: 'absolute', left: 0, right: 0, top: 250, textAlign: 'center' }}>
-            <h2 className="display" style={{ fontSize: 112 }}>
+          <div style={{ position: 'absolute', left: 0, right: 0, top: 150, textAlign: 'center' }}>
+            <h2 className="display" style={{ fontSize: 104 }}>
               <Words text="María isn’t one person." delay={0.3} />
             </h2>
+            <h2 className="display coral" style={{ fontSize: 104 }}>
+              <Words text="She’s millions." delay={1.1} />
+            </h2>
           </div>
-          <div style={{ position: 'absolute', left: 0, right: 0, top: 470, display: 'flex', justifyContent: 'center', gap: 110 }}>
+          <div style={{ position: 'absolute', left: 0, right: 0, top: 480, display: 'flex', justifyContent: 'center', gap: 120 }}>
             {NUMBERS.map((n, i) => (
-              <motion.div key={n.label} style={{ textAlign: 'center' }} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease, delay: 1.2 + i * 0.45 }}>
-                <div className="number" style={{ fontSize: 76, lineHeight: 1, color: i === NUMBERS.length - 1 ? 'var(--coral)' : 'var(--paper)' }}>
-                  <Counter to={n.to} duration={1.2} delay={1.2 + i * 0.45} format={n.fmt} />
+              <motion.div key={n.label} style={{ textAlign: 'center' }} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease, delay: 2.0 + i * 0.5 }}>
+                <div className="number" style={{ fontSize: 96, lineHeight: 1, color: i === NUMBERS.length - 1 ? 'var(--coral)' : 'var(--paper)' }}>
+                  <Counter to={n.to} duration={1.3} delay={2.0 + i * 0.5} format={n.fmt} />
                 </div>
                 <div className="display" style={{ fontSize: 26, fontWeight: 600, marginTop: 10, color: 'var(--ink-70)' }}>
                   {n.label}
+                </div>
+                <div className="mono" style={{ fontSize: 11, marginTop: 10, opacity: 0.55 }}>
+                  {n.src}
                 </div>
               </motion.div>
             ))}
@@ -56,18 +62,21 @@ function Content({ build }: { build: number }) {
       <At build={build} at={1}>
         <motion.div
           key="end"
-          style={{ position: 'absolute', left: 0, right: 0, top: 170, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+          style={{ position: 'absolute', left: 0, right: 0, top: 130, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
           <Logo width={520} delay={0.6} tone="light" />
-          <h2 className="display" style={{ fontSize: 62, marginTop: 54, color: 'var(--ink-100)' }}>
-            <Words text="VoxWave makes sure you are heard." delay={2.0} wordClass={(w) => (w === 'heard.' ? 'coral' : undefined)} />
+          <div className="display" style={{ fontSize: 40, fontWeight: 600, marginTop: 48, color: C.navy, opacity: 0.7 }}>
+            <Words text="The answer was always in her voice." delay={1.8} />
+          </div>
+          <h2 className="display" style={{ fontSize: 66, marginTop: 14, color: C.navy }}>
+            <Words text="VoxWave makes sure you are heard." delay={2.8} wordClass={(w) => (w === 'heard.' ? 'coral' : undefined)} />
           </h2>
           <div style={{ display: 'flex', gap: 84, marginTop: 70 }}>
             {TEAM.map(([n, r], i) => (
-              <motion.div key={n} style={{ textAlign: 'center' }} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease, delay: 3.0 + i * 0.15 }}>
+              <motion.div key={n} style={{ textAlign: 'center' }} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease, delay: 3.8 + i * 0.15 }}>
                 <div className="display" style={{ fontSize: 32, fontWeight: 700, color: C.navy }}>
                   {n}
                 </div>
@@ -77,7 +86,7 @@ function Content({ build }: { build: number }) {
               </motion.div>
             ))}
           </div>
-          <motion.div className="mono" style={{ fontSize: 16, marginTop: 50, letterSpacing: '0.4em', color: C.coral }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 3.8 }}>
+          <motion.div className="mono" style={{ fontSize: 16, marginTop: 50, letterSpacing: '0.4em', color: C.coral }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 4.6 }}>
             FdiProtocol · Creative Shock 2026
           </motion.div>
         </motion.div>
@@ -93,9 +102,9 @@ const coral = (out: Float32Array, n: number) => {
 export const S20: SlideDef = {
   id: 'S20',
   builds: 2,
-  auto: [6],
+  auto: [7.5],
   notes:
-    "María isn't one person. She is two hundred thousand people in Spain, and twelve million in the world. VoxWave makes sure you are heard. We are FdiProtocol. Thank you.",
+    "María isn't one person. She's millions: twelve million with Parkinson's today, twenty-five million by 2050, and over a hundred million living after a stroke. [logo] The answer was always in her voice. VoxWave makes sure you are heard. We are FdiProtocol. Thank you.",
   theme: (b) => (b === 1 ? 'light' : 'dark'),
   // María's voice, calm and whole, under the numbers; the page dawns over it at the end.
   wave: () => ({ shape: wave({ y: 790, amp: 40, speed: 0.9 }), paint: coral, opacity: 1, core: 1.6, glow: 1.1, echoes: 0.3, duration: 2600, stagger: 0.3, dir: 1 }),

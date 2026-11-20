@@ -135,7 +135,7 @@ export const S06: SlideDef = {
   id: 'S06',
   builds: 1,
   notes:
-    "And we're not building it alone: Dr. Gustavo Arrieta and Dr. Andrés Pastor at Gregorio Marañón, Cristina Ibarrola at the Navarra Parkinson's Association, and researchers in Estonia and Lithuania.",
+    "And we're not doing this alone. We're working with Dr. Gustavo Arrieta and Dr. Andrés Pastor at Gregorio Marañón, with Cristina Ibarrola at the Navarra Parkinson's Association, and with researchers in Estonia and Lithuania.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),
