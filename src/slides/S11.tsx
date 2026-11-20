@@ -10,9 +10,9 @@ const ease = EASE as unknown as [number, number, number, number];
 /**
  * Built to last — part 1, on paper.
  * Left, "For us": the contribution line climbs out of the red and crosses zero at
- * 300 patients. Right, "For the clinic": a balance. VoxWave (€480 a patient-year)
- * lands on one pan, a hospital stay (€4,400) slams onto the other — then eight more
- * VoxWave blocks fall until it balances: one avoided stay pays for nine patients.
+ * break-even. Right, "For the clinic": a balance. VoxWave (€480 a patient-year) lands
+ * on one pan; on the other, what Parkinson's costs per patient per year falls block by
+ * block (healthcare, family care, lost work ≈ €14,300). VoxWave is 3.4% of that bill.
  */
 
 const NAVY = C.navy, TEAL = C.teal, CORAL = C.coral;
@@ -26,11 +26,9 @@ const T = {
   line0: 1.0, // the dot travels 0 → 600 patients
   line1: 4.2,
   scale: 2.6, // the balance appears
-  first: 3.5, // first VoxWave block lands
-  stay: 4.6, // the hospital stay lands
-  more0: 6.0, // the other eight VoxWave blocks
-  moreGap: 0.3,
-  final: 8.7,
+  vox: 3.5, // VoxWave lands on the left pan
+  costs: [4.6, 5.5, 6.2], // what Parkinson's costs, block by block, on the right pan
+  final: 7.3,
 };
 
 // ---------- Left: break-even chart ----------
@@ -42,14 +40,18 @@ const py = (p: number) => CH.zero - ((p - BE) / BE) * CH.half; // straight line 
 // ---------- Right: the balance ----------
 const PIV = { x: 1390, y: 470 };
 const ARM = 250, HANG = 150;
-const SMALL = { w: 58, h: 30 }, BIG = { w: 168, h: 124 };
-const SLOTS: [number, number][] = [
-  [-62, 0], [0, 0], [62, 0],
-  [-62, 1], [0, 1], [62, 1],
-  [-62, 2], [0, 2], [62, 2],
+const VOX = { w: 84, h: 40 };
+// What Parkinson's costs per patient per year in Europe: mean €14,278, split like the
+// COIN-Eu total (76% direct care, 19% informal care, 4% lost work). Movement Disorders 2026.
+const COSTS = [
+  { label: 'Healthcare', sub: 'stays · emergencies · visits · drugs', value: 10840, w: 240, h: 116 },
+  { label: 'Family care', value: 2760, w: 214, h: 50 },
+  { label: 'Lost work', value: 630, w: 160, h: 34 },
 ];
-const smallLand = (i: number) => (i === 0 ? T.first : T.more0 + (i - 1) * T.moreGap);
+const MEAN = 14278;
+const SHARE = ((480 / MEAN) * 100).toFixed(1); // 3.4
 const DROP = 0.42; // seconds of free fall
+const eur = (v: number) => `€${Math.round(v).toLocaleString('en-US')}`;
 
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const io = (v: number) => (v < 0.5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2);
@@ -140,10 +142,9 @@ function Balance({ t }: { t: number }) {
   const appear = io(clamp((t - T.scale) / 0.7));
   // Weight on each side (each block counts once it has landed, with a short settle).
   const settle = (land: number) => clamp((t - land) / 0.25);
-  let L = 0;
-  for (let i = 0; i < 9; i++) L += 480 * settle(smallLand(i));
-  const R = 4400 * settle(T.stay);
-  const target = 12.5 * clamp((R - L) / 4400, -1, 1); // degrees; + = right side down
+  const L = 480 * settle(T.vox);
+  const R = COSTS.reduce((s, c, i) => s + c.value * settle(T.costs[i]), 0);
+  const target = 13 * Math.tanh((R - L) / 3500); // degrees; + = right side down
   const ang = useSpring(target, t);
   const a = (ang * Math.PI) / 180;
   const end = (side: -1 | 1): [number, number] => [PIV.x + side * ARM * Math.cos(a), PIV.y + side * ARM * Math.sin(a)];
@@ -173,51 +174,63 @@ function Balance({ t }: { t: number }) {
           <path d={`M${pn.x - 92} ${pn.y} Q${pn.x} ${pn.y + 34} ${pn.x + 92} ${pn.y}`} stroke={NAVY} strokeWidth={6} fill="none" strokeLinecap="round" />
         </g>
       ))}
-      {/* VoxWave blocks: €480 each, one patient for a year */}
-      {SLOTS.map(([ox, row], i) => {
-        const land = smallLand(i);
+      {/* VoxWave: €480, one patient for a year */}
+      {t >= T.vox - DROP &&
+        (() => {
+          const y = fall(T.vox, lPan.y, -VOX.h - 6);
+          const x = lPan.x - VOX.w / 2;
+          const hit = Math.exp(-Math.pow((t - T.vox) * 7, 2));
+          return (
+            <g opacity={clamp((t - (T.vox - DROP)) / 0.15)}>
+              <rect x={x} y={y} width={VOX.w} height={VOX.h} rx={9} fill={CORAL} />
+              <text x={x + VOX.w / 2} y={y + 27} textAnchor="middle" fontFamily="Sora, sans-serif" fontWeight={700} fontSize={19} fill="#fff">
+                €480
+              </text>
+              {hit > 0.02 && <rect x={x - 4} y={y - 4} width={VOX.w + 8} height={VOX.h + 8} rx={12} fill="none" stroke={CORAL} strokeWidth={2} opacity={hit} />}
+            </g>
+          );
+        })()}
+      {/* What Parkinson's costs, stacked block by block: each lands heavier than VoxWave */}
+      {COSTS.map((c, i) => {
+        const land = T.costs[i];
         if (t < land - DROP) return null;
-        const y = fall(land, lPan.y, -SMALL.h - 6 - row * (SMALL.h + 3));
-        const x = lPan.x + ox - SMALL.w / 2;
-        const hit = Math.exp(-Math.pow((t - land) * 7, 2));
-        const op = clamp((t - (land - DROP)) / 0.15);
+        const below = COSTS.slice(0, i).reduce((s, b) => s + b.h + 4, 0);
+        const y = fall(land, rPan.y, -below - c.h - 4);
+        const x = rPan.x - c.w / 2;
+        const hit = Math.exp(-Math.pow((t - land) * 5, 2));
+        const big = i === 0;
         return (
-          <g key={i} opacity={op}>
-            <rect x={x} y={y} width={SMALL.w} height={SMALL.h} rx={7} fill={CORAL} />
-            <text x={x + SMALL.w / 2} y={y + 21} textAnchor="middle" fontFamily="Sora, sans-serif" fontWeight={700} fontSize={15} fill="#fff">
-              €480
+          <g key={c.label} opacity={clamp((t - (land - DROP)) / 0.15)}>
+            {big && hit > 0.02 && <ellipse cx={rPan.x} cy={rPan.y + 8} rx={110 + (1 - hit) * 60} ry={14} fill="none" stroke={NAVY} strokeWidth={2} opacity={hit * 0.6} />}
+            <rect x={x} y={y} width={c.w} height={c.h} rx={big ? 14 : 9} fill={NAVY} opacity={big ? 1 : i === 1 ? 0.82 : 0.66} />
+            {big && (
+              <>
+                <rect x={x + 22} y={y + 20} width={8} height={24} rx={2} fill="#fbf9f5" />
+                <rect x={x + 14} y={y + 28} width={24} height={8} rx={2} fill="#fbf9f5" />
+              </>
+            )}
+            <text x={big ? x + 50 : x + c.w / 2} y={big ? y + 40 : y + c.h / 2 + 7} textAnchor={big ? 'start' : 'middle'} fontFamily="Sora, sans-serif" fontWeight={700} fontSize={big ? 22 : i === 1 ? 16 : 14} fill="#fbf9f5">
+              {big ? c.label : `${c.label} ${eur(c.value)}`}
             </text>
-            {hit > 0.02 && <rect x={x - 4} y={y - 4} width={SMALL.w + 8} height={SMALL.h + 8} rx={10} fill="none" stroke={CORAL} strokeWidth={2} opacity={hit} />}
+            {big && (
+              <>
+                <text x={x + c.w / 2} y={y + 80} textAnchor="middle" fontFamily="Sora, sans-serif" fontWeight={700} fontSize={30} fill="#fbf9f5">
+                  {eur(c.value)}
+                </text>
+                <text x={x + c.w / 2} y={y + 102} textAnchor="middle" fontFamily="Inter, sans-serif" fontSize={13} fill="rgba(251,249,245,0.75)">
+                  {c.sub}
+                </text>
+              </>
+            )}
           </g>
         );
       })}
-      {/* The hospital stay: €4,400, heavy */}
-      {t >= T.stay - DROP && (
-        <g>
-          {(() => {
-            const y = fall(T.stay, rPan.y, -BIG.h - 4);
-            const x = rPan.x - BIG.w / 2;
-            const hit = Math.exp(-Math.pow((t - T.stay) * 5, 2));
-            return (
-              <>
-                {hit > 0.02 && <ellipse cx={rPan.x} cy={rPan.y + 8} rx={110 + (1 - hit) * 60} ry={14} fill="none" stroke={NAVY} strokeWidth={2} opacity={hit * 0.6} />}
-                <rect x={x} y={y} width={BIG.w} height={BIG.h} rx={14} fill={NAVY} />
-                <rect x={x + BIG.w / 2 - 6} y={y + 18} width={12} height={36} rx={2} fill="#fbf9f5" />
-                <rect x={x + BIG.w / 2 - 18} y={y + 30} width={36} height={12} rx={2} fill="#fbf9f5" />
-                <text x={x + BIG.w / 2} y={y + 96} textAnchor="middle" fontFamily="Sora, sans-serif" fontWeight={700} fontSize={30} fill="#fbf9f5">
-                  €4,400
-                </text>
-              </>
-            );
-          })()}
-        </g>
-      )}
       {/* pan captions */}
-      <text x={lPan.x} y={lPan.y + 66} textAnchor="middle" fontFamily="Inter, sans-serif" fontSize={20} fill={CORAL} opacity={clamp((t - T.first) / 0.5)}>
+      <text x={lPan.x} y={lPan.y + 66} textAnchor="middle" fontFamily="Inter, sans-serif" fontSize={20} fill={CORAL} opacity={clamp((t - T.vox) / 0.5)}>
         VoxWave · one patient, one year
       </text>
-      <text x={rPan.x} y={rPan.y + 66} textAnchor="middle" fontFamily="Inter, sans-serif" fontSize={20} fill={INK} opacity={clamp((t - T.stay) / 0.5)}>
-        One hospital stay
+      <text x={rPan.x} y={rPan.y + 66} textAnchor="middle" fontFamily="Inter, sans-serif" fontSize={20} fill={INK} opacity={clamp((t - T.costs[0]) / 0.5)}>
+        Parkinson’s, per patient, per year
       </text>
     </svg>
   );
@@ -233,8 +246,8 @@ function Content() {
   const t = useElapsed();
   const prog = io(clamp((t - T.line0) / (T.line1 - T.line0)));
   const patients = Math.min(BE, Math.round(PMAX * prog));
-  const blocks = Array.from({ length: 9 }, (_, i) => (t >= smallLand(i) ? 1 : 0) as number).reduce((a, b) => a + b, 0);
-  const status = t < T.stay ? 'Unit economics' : t < T.final ? 'Weighing it up' : 'Balanced';
+  const landed = COSTS.reduce((s, c, i) => s + (t >= T.costs[i] ? c.value : 0), 0);
+  const status = t < T.costs[0] ? 'Unit economics' : t < T.final ? 'Weighing it up' : 'Worth it';
   return (
     <div className="content">
       <div className="mono" style={{ position: 'absolute', left: 120, top: 62, fontSize: 18, color: NAVY, display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -282,17 +295,22 @@ function Content() {
         </div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginTop: 6 }}>
           <span className="number" style={{ fontSize: 86, lineHeight: 1, color: t >= T.final ? CORAL : NAVY, transition: 'color .4s' }}>
-            {t < T.stay ? '€480' : t < T.final ? `${blocks} × €480` : '9 = 1'}
+            {t < T.costs[0] ? '€480' : t < T.final ? `€480 vs ${eur(landed)}` : `${SHARE}%`}
           </span>
+          {t >= T.final && (
+            <motion.span className="display" style={{ fontSize: 26, fontWeight: 600, color: NAVY }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
+              of what Parkinson’s already costs
+            </motion.span>
+          )}
         </div>
       </motion.div>
       <Balance t={t} />
-      <motion.div style={{ position: 'absolute', left: 1040, top: 850, width: 780 }} {...rise(T.final)}>
-        <div className="display" style={{ fontSize: 26, fontWeight: 600, color: CORAL }}>
-          One avoided hospital stay pays for 9 patients for a whole year.
+      <motion.div style={{ position: 'absolute', left: 1040, top: 832, width: 790 }} {...rise(T.final)}>
+        <div className="display" style={{ fontSize: 25, fontWeight: 600, color: CORAL, lineHeight: 1.25 }}>
+          Catch changes early, trim that bill by just {SHARE}%, and VoxWave pays for itself.
         </div>
-        <div className="body" style={{ fontSize: 21, marginTop: 6, color: INK }}>
-          Avoid 1 stay per 9 patients a year, and VoxWave is free.
+        <div className="body" style={{ fontSize: 18, marginTop: 10, color: INK }}>
+          Mean cost per patient in Europe: €14,278 a year · COIN-Eu, Movement Disorders 2026
         </div>
       </motion.div>
     </div>
@@ -303,7 +321,8 @@ export const S11: SlideDef = {
   id: 'S11',
   builds: 1,
   notes:
-    'VoxWave is built to last. Clinics pay, not grants: forty euros a patient a month, and at three hundred and forty patients — just 0.17% of patients in Spain — VoxWave pays for itself. And it saves clinics money: one avoided hospital stay costs about four thousand four hundred euros. That pays for nine patients for a whole year. Avoid one stay per nine patients a year, and VoxWave is free.',
+    'VoxWave is built to last. Clinics pay, not grants: forty euros a patient a month, and at three hundred and forty patients — just 0.17% of patients in Spain — VoxWave pays for itself. And for the clinic, put it on the scale. On one side, VoxWave: four hundred and eighty euros a year. On the other, what Parkinson’s already costs per patient every year: hospital stays, emergencies, visits and drugs, family care, lost work — over fourteen thousand euros, and every change caught late makes it heavier. VoxWave is three point four percent of that bill: trim it by just that much, and it pays for itself.',
+
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

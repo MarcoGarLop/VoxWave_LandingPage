@@ -22,7 +22,7 @@ function Content({ build }: { build: number }) {
         <div key="q" style={{ position: 'absolute', left: 0, right: 0, top: 330, textAlign: 'center' }}>
           <Fade delay={0.4}>
             <p className="body" style={{ fontSize: 36 }}>
-              VoxWave makes sure someone is listening.
+              VoxWave makes sure you are heard.
             </p>
           </Fade>
           <h2 className="display" style={{ fontSize: 90, marginTop: 26, padding: '0 120px' }}>
@@ -66,7 +66,7 @@ export const S20: SlideDef = {
   id: 'S20',
   builds: 2,
   auto: [6],
-  notes: 'VoxWave makes sure someone is listening. What if the answer was there all along? We’re FdiProtocol. Thank you.',
+  notes: 'VoxWave makes sure you are heard. What if the answer was there all along? We’re FdiProtocol. Thank you.',
   // The two voices converge into one flat line with a heartbeat.
   wave: (b) => ({
     shape: heartbeat({ y: b === 0 ? 760 : 960, amp: b === 0 ? 80 : 40, period: 4.6 }),

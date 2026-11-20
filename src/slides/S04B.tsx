@@ -36,7 +36,7 @@ function Content({ build }: { build: number }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease, delay: 2.6 }}
           >
-            Every day. Three minutes. Someone is listening.
+            VoxWave makes sure you are heard.
           </motion.div>
         </motion.div>
       </At>
