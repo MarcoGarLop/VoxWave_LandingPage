@@ -269,7 +269,7 @@ export const S14: SlideDef = {
   id: 'S14',
   builds: 1,
   notes:
-    'What does it cost us? Built on an ESP32 with medical-grade parts, the device costs about thirty-nine euros. Per patient per year — the device reused for three years, EU-hosted cloud and AI, clinical and patient support, logistics, and medical regulation and quality — about one hundred and forty-five euros. Against four hundred and eighty a year, that is a gross margin around seventy percent: between Omada and Hinge Health. And each new patient pays back in thirty-eight days. Then it is margin: about three hundred and thirty-five euros per patient, every year.',
+    "Each device costs us about thirty-nine euros, and each patient around a hundred and forty-five a year, medical regulation included. That's a seventy percent gross margin, in line with Omada and Hinge Health. And every new patient pays back in thirty-eight days.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

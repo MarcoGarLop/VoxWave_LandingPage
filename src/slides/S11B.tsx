@@ -273,7 +273,7 @@ export const S11B: SlideDef = {
   id: 'S11B',
   builds: 1,
   notes:
-    'Every risk has an answer. More work for her doctor? One page, under two minutes. What if it’s wrong? It never diagnoses; her doctor decides. Who hears her voice? Only her doctor, and her data stays in the EU. Does it work for every voice? It compares her only with herself. What if she can’t use tech? One button, no phone, no internet. And the waste? Every device is refurbished and lent again.',
+    "Every risk has an answer. It never diagnoses: the doctor decides. Her data stays in the EU. The doctor reads one page. And every device is refurbished and reused.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

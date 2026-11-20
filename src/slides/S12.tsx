@@ -275,7 +275,7 @@ export const S12: SlideDef = {
   id: 'S12',
   builds: 1,
   notes:
-    "Why now? Patients double — from twelve to twenty-five million by 2050 — while the number of neurologists has stagnated: Spain is already about eight hundred short. The gap between them is every patient nobody monitors between visits. That gap is our market. And everyone we need wants in: private neurology clinics, our first customers; Gregorio Marañón, for clinical validation; and the Navarra Parkinson's Association, to reach patients.",
+    "Why now? Patients double by 2050, while neurologists don't. That gap is our market. And clinics, Gregorio Marañón and patient associations all want in.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

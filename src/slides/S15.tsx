@@ -252,7 +252,7 @@ export const S15: SlideDef = {
   id: 'S15',
   builds: 1,
   notes:
-    "Our road. Year one: we validate in Madrid, with a clinical pilot at Gregorio Marañón and our first private clinics — sixty patients. Year two: with the CE mark, we scale across Spain through private clinics and insurers, from three hundred to a thousand patients. Year three: we cross the Atlantic to the US Hispanic community — sixty-eight million people, the group with the highest Parkinson's incidence — with FDA clearance and a model that already speaks Spanish. Validate in Madrid. Grow where Spanish is spoken.",
+    "Our road. Year one: we validate in Madrid. Year two: we scale across Spain with the CE mark. Year three: we cross to the US Hispanic community, sixty-eight million people, with a model that already speaks Spanish.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

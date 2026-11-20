@@ -112,8 +112,14 @@ const STAMPS = [
     rot: 1.8,
   },
 ];
-const STAMP = { x: 1062, w: 700, h: 300 };
-const stampTop = (k: number) => 262 + k * (STAMP.h + 50);
+const STAMP = { x: 1062, w: 700, h: 276 };
+const stampTop = (k: number) => 250 + k * (STAMP.h + 36);
+
+// Researchers we're talking to: lighter than the two stamps, but on the page.
+const UNIS = [
+  { name: 'University of Tartu', country: 'Estonia' },
+  { name: 'Kaunas University of Technology', country: 'Lithuania' },
+];
 
 function Stamp({ k }: { k: number }) {
   const s = STAMPS[k];
@@ -190,6 +196,28 @@ function Content() {
       {STAMPS.map((_, k) => (
         <Stamp key={k} k={k} />
       ))}
+      <motion.div
+        style={{ position: 'absolute', left: STAMP.x, top: stampTop(2) + 4, width: STAMP.w }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease, delay: T.stamp0 + 2 * T.stampGap + 0.2 }}
+      >
+        <div className="mono" style={{ fontSize: 14, color: TEAL }}>
+          And in conversation with researchers at
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 10, whiteSpace: 'nowrap' }}>
+          {UNIS.map((u) => (
+            <div key={u.name}>
+              <span className="display" style={{ fontSize: 23, fontWeight: 600, color: NAVY }}>
+                {u.name}
+              </span>
+              <span className="body" style={{ fontSize: 18, color: 'rgba(9,38,52,0.6)', marginLeft: 8 }}>
+                {u.country}
+              </span>
+            </div>
+          ))}
+        </div>
+      </motion.div>
     </div>
   );
 }
@@ -198,7 +226,7 @@ export const S06: SlideDef = {
   id: 'S06',
   builds: 1,
   notes:
-    'And this is not a hunch. A sustained “aah” recorded at home estimates the clinical score within two points of the neurologist. A study across five languages showed speech flags Parkinson’s and tracks it. Ordinary phone calls are enough. And patients keep up with daily tests. We build it with Dr. Gustavo Arrieta and Dr. Andrés Pastor at Gregorio Marañón, one of Spain’s largest hospitals, and with Cristina Ibarrola at the Navarra Parkinson’s Association.',
+    "And this isn't a hunch. Peer-reviewed research shows the voice tracks Parkinson's, even before diagnosis, from home and on ordinary phones. And we're building it with Dr. Gustavo Arrieta and Dr. Andrés Pastor at Gregorio Marañón, and Cristina Ibarrola at the Navarra Parkinson's Association.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

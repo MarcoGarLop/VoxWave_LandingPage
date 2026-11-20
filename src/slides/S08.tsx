@@ -393,7 +393,7 @@ export const S08: SlideDef = {
   id: 'S08',
   builds: 1,
   notes:
-    'This is powered by the VoxWave voice model. It listens to every session and reads four voice dials from our paper: voice clarity, pitch variation, syllable rate and pause length. Behind them, three steps. First we remove the room: in public datasets, silence alone predicted Parkinson’s, so we subtract the microphone and the room from every recording. Then a self-supervised speech model produces the VoxWave voice index: AUROC 0.91 in Spanish, and 0.79 in English it was never trained on. Finally, we compare María only with her own baseline, and alert only on a drift sustained for three weeks.',
+    "Behind it is our own voice model. It reads four voice dials: clarity, intonation, speed and pauses. First, we remove the room: in public datasets, even silence predicted Parkinson's. Then our model scores the voice: AUROC zero point nine one in Spanish, and zero point seven nine in English it was never trained on. And María is compared only with herself.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

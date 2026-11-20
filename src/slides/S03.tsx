@@ -109,7 +109,8 @@ function Content() {
 export const S03: SlideDef = {
   id: 'S03',
   builds: 1,
-  notes: 'And nearly nine in ten of them will lose part of their voice.',
+  notes:
+    "And nearly nine in ten of them will lose part of their voice.",
   // The thread stays quiet: the world's points become ten people.
   wave: () => ({ shape: wave({ y: 702, amp: 40 }), opacity: 0, duration: 1600, stagger: 0 }),
   particles: () => ({

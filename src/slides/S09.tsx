@@ -304,7 +304,7 @@ export const S09: SlideDef = {
   id: 'S09',
   builds: 1,
   notes:
-    "This is María, every day since her last visit, inside her own baseline. Suddenly her voice starts to drift. After three weeks of sustained drift, the change is confirmed and her neurologist is notified — so her next visit moves forward from day one hundred and eighty to day one hundred and twenty-six. Treatment is adjusted, and her voice comes back to baseline. Without VoxWave, that change goes unnoticed until the next visit: eighty days later. That's our main indicator: days from the first sustained change to a neurologist's review. Today it's months. Our target: about three weeks — instead of three to six months.",
+    "Here's the impact. María's voice, every day, inside her own baseline. Then it drops. After three weeks of sustained drift, her neurologist gets an alert and her visit moves forward. Treatment is adjusted, and her voice comes back. Without VoxWave, nobody notices until day one hundred and eighty.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

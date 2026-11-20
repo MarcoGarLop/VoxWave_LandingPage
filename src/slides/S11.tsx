@@ -321,7 +321,7 @@ export const S11: SlideDef = {
   id: 'S11',
   builds: 1,
   notes:
-    'VoxWave is built to last. Clinics pay, not grants: forty euros a patient a month, and at three hundred and forty patients — just 0.17% of patients in Spain — VoxWave pays for itself. And for the clinic, put it on the scale. On one side, VoxWave: four hundred and eighty euros a year. On the other, what Parkinson’s already costs per patient every year: hospital stays, emergencies, visits and drugs, family care, lost work — over fourteen thousand euros, and every change caught late makes it heavier. VoxWave is three point four percent of that bill: trim it by just that much, and it pays for itself.',
+    "And it's built to last. Clinics pay, not grants: forty euros a patient a month, and we break even at three hundred and forty patients. For the clinic, Parkinson's already costs over fourteen thousand euros per patient a year. VoxWave is three point four percent of that bill.",
 
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),

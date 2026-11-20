@@ -210,7 +210,7 @@ export const S02: SlideDef = {
   builds: 4,
   auto: [4.6, 4.4, 4.4],
   notes:
-    'María is one of more than two hundred thousand people with Parkinson’s in Spain. Worldwide, almost twelve million. By 2050, twenty-five million: it is the fastest-growing neurological disease. And it already costs more than a hundred and fifteen billion dollars a year — in the US and Europe alone.',
+    "María is one of more than two hundred thousand people with Parkinson's in Spain. Almost twelve million worldwide, and twenty-five million by 2050: it is the fastest-growing neurological disease. And it already costs more than a hundred and fifteen billion dollars a year, in the US and Europe alone.",
   // The voice breaks into the points of light that draw Spain.
   wave: () => ({ shape: wave({ y: 702, amp: 52 }), opacity: 0, duration: 1600, stagger: 0 }),
   particles,

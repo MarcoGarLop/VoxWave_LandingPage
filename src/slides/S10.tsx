@@ -248,7 +248,7 @@ export const S10: SlideDef = {
   id: 'S10',
   builds: 1,
   notes:
-    "How will we prove it? With a clinical pilot we're proposing with Gregorio Marañón: sixty patients for six months, against a matched control group with usual care. We'll measure four things. Fewer emergency admissions, against the control group. Savings: we measure the cost per patient we avoid — stays, emergencies, visits, care. Parkinson’s costs over fourteen thousand euros per patient a year; VoxWave pays off above three point four percent. Better triage — our primary indicator: the time from a sustained change to a neurologist's review: about three weeks, from three to six months today. And better lives, measured with the PDQ-8 quality-of-life scale. Then we scale: sixty, three hundred, a thousand patients.",
+    "We'll prove it with a clinical pilot we're proposing with Gregorio Marañón: sixty patients, six months, against usual care. We'll measure four things: the time to catch a change, emergency admissions, savings, and quality of life. Then we scale: three hundred, then a thousand patients.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

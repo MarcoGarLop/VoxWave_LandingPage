@@ -2,7 +2,7 @@ import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { C, EASE } from '../brand/tokens';
 import type { SlideDef } from '../deck/types';
-import { PACE, clock } from '../engine/Engine';
+import { clock } from '../engine/Engine';
 import { clamp } from '../engine/math';
 import { lin, put } from '../engine/paint';
 import type { ParticleTarget } from '../engine/Particles';
@@ -355,23 +355,9 @@ export const S16B: SlideDef = {
   builds: 2,
   auto: [US_AT + 2.6],
   notes:
-    "Today you get one or the other. Measurement every day, but only with a smartwatch, an iPhone or a belt sensor, like Rune Labs or STAT-ON. Or something anyone can use, but only now and then: a neurologist visit every six months, a phone call from Tucuvi, an English voice API like Canary. Daily, or for everyone. Never both. Until now: three minutes of voice a day, in Spanish, from a phone or one button. And only VoxWave has all of this: our own AI model, built and validated by us — not a rented voice API; every patient compared only with herself, sharper every day; Spanish first, and it already works in English it was never trained on; and a phone or one button, no internet needed, every day at home.",
-  // A faint thread waits low; the moment the sonar finds VoxWave, the voice lights up across the screen.
-  wave: (b) => {
-    const lit = { shape: wave({ y: 1000, amp: 26, speed: 0.9 }), paint: coralPaint, opacity: 0.85, core: 1.5, glow: 1.1, echoes: 0.3, duration: 1800, stagger: 0.35, dir: 1 as const };
-    if (b >= 1) return lit;
-    return {
-      shape: wave({ y: 1010, amp: 10, speed: 0.6 }),
-      paint: coralPaint,
-      opacity: 0.12,
-      core: 1,
-      glow: 0.3,
-      duration: 1200,
-      stagger: 0.3,
-      // `then` delays run on the engine's paced clock; compensate so it lands exactly on VoxWave.
-      then: { after: ((US_AT + 0.15) * 1000) / PACE, state: lit },
-    };
-  },
+    "Today you get one or the other: daily monitoring with a smartwatch or a sensor, or something anyone can use, but only now and then. Never both. Until now. Only VoxWave brings together our own validated model, a personal baseline, Spanish first, and a phone or one button.",
+  // No thread on this slide: the sonar carries it alone.
+  wave: () => ({ shape: wave({ y: 1010, amp: 10, speed: 0.6 }), paint: coralPaint, opacity: 0, duration: 1200, stagger: 0 }),
   particles: (b) => {
     const t0 = clock.t;
     return { state: { target: sonar(t0, b >= 1), duration: b === 0 ? 1800 : 900, scatter: b === 0 ? 0.4 : 0, size: 5.2 } };

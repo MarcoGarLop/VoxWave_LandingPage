@@ -327,7 +327,7 @@ export const S13: SlideDef = {
   id: 'S13',
   builds: 1,
   notes:
-    'Follow the money. The clinic or hospital pays forty euros per patient per month — less than a single private neurology visit. María pays nothing: she just gets a daily check-in. And for every hospital stay we help avoid, about four thousand four hundred euros flow back to the clinic. Later, insurers save the same way. Everyone wins: María gets someone listening every day, the clinic gets fewer emergencies and more patients with the same team, and we get recurring revenue at around seventy percent gross margin. Especially María.',
+    "The model is simple. The clinic pays forty euros a month, less than one private neurology visit. María pays nothing. And every hospital stay we help avoid brings back about four thousand four hundred euros.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

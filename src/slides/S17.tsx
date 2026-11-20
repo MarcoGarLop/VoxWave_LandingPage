@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { C, EASE } from '../brand/tokens';
 import type { SlideDef } from '../deck/types';
 import { wave } from '../engine/shapes';
+import { DrawnFormula } from '../ui/DrawnFormula';
 import { At, Words } from '../ui/motion';
 
 const ease = EASE as unknown as [number, number, number, number];
@@ -12,14 +13,14 @@ const ease = EASE as unknown as [number, number, number, number];
  * Build 0: the real material pops in, in the order it happened — prototype photos
  * drop like prints on the left, replies from researchers stack like notifications on
  * the right (newest on top), and a clock in the corner ticks through the weekend.
- * Build 1: what we tested, what it showed, and what we changed.
+ * Build 1: three things we learned, and the paper we wrote about them.
  */
 
 const NAVY = C.navy, TEAL = C.teal, CORAL = C.coral;
 const INK = 'rgba(9,38,52,0.72)';
 
 type Photo = { kind: 'photo'; src: string; caption: string; x: number; y: number; w: number; rot: number };
-type Mail = { kind: 'mail'; who: string; initials: string; org: string; country: string; quote: string; shots: { src: string; h: number }[] };
+type Mail = { kind: 'mail'; who: string; initials: string; org?: string; country: string; quote: string; shots: { src: string; h: number }[]; logo?: { src: string; h: number } };
 type Item = { at: number; clock: string; item: Photo | Mail };
 
 const W = '/media/weekend/';
@@ -30,9 +31,11 @@ const ITEMS: Item[] = [
   { at: 3.6, clock: 'Thu · 17:17', item: { kind: 'photo', src: W + 'wired.jpg', caption: 'Thu 17:17 · first wiring', x: 410, y: 250, w: 240, rot: 3.5 } },
   { at: 4.6, clock: 'Thu · evening', item: { kind: 'mail', who: 'Evaldas Vaičiukynas', initials: 'EV', org: 'Kaunas University of Technology', country: 'Lithuania', quote: '“I’d see testing AUC on Spanish.” — so we did.', shots: [{ src: W + 'evaldas2.png', h: 140 }] } },
   { at: 5.9, clock: 'Fri · 01:38', item: { kind: 'photo', src: W + 'case.jpg', caption: 'Fri 01:38 · it has a body', x: 680, y: 186, w: 270, rot: -2.5 } },
-  { at: 7.0, clock: 'Fri · 09:29', item: { kind: 'mail', who: 'Cristina Ibarrola', initials: 'CI', org: 'Asociación Navarra de Parkinson', country: 'Spain', quote: '“Nos parece un proyecto muy interesante.”', shots: [{ src: W + 'cristina.png', h: 66 }] } },
+  { at: 7.0, clock: 'Fri · 09:29', item: { kind: 'mail', who: 'Cristina Ibarrola', initials: 'CI', org: 'Asociación Navarra de Parkinson', country: 'Spain', quote: '“Nos parece un proyecto muy interesante.”', shots: [{ src: W + 'cristina.png', h: 66 }], logo: { src: '/media/partners/fep_color.png', h: 46 } } },
+  // TODO before the final: replace with the exact words (and a crop) of the hospital's real email.
+  { at: 8.0, clock: 'Fri', item: { kind: 'mail', who: 'Neurology team', initials: 'GM', country: 'Spain', quote: 'A very interesting idea, with a big market opportunity: the need is real.', shots: [], logo: { src: '/media/partners/maranon_color.svg', h: 34 } } },
 ];
-const ALL_IN = 8.2;
+const ALL_IN = 9.2;
 const SNIP = 0.45; // the real email, small, as proof under the quote
 
 function useElapsed() {
@@ -76,16 +79,22 @@ function Notification({ m, time }: { m: Mail; time: string }) {
       transition={{ type: 'spring', stiffness: 260, damping: 24 }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px' }}>
-        <div className="display" style={{ width: 40, height: 40, borderRadius: 20, background: TEAL, color: '#fff', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
-          {m.initials}
-        </div>
+        {m.logo ? (
+          <img src={m.logo.src} alt="" style={{ height: m.logo.h, display: 'block', flex: 'none' }} />
+        ) : (
+          <div className="display" style={{ width: 40, height: 40, borderRadius: 20, background: TEAL, color: '#fff', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
+            {m.initials}
+          </div>
+        )}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="display" style={{ fontSize: 21, fontWeight: 700, color: NAVY, lineHeight: 1.1 }}>
             {m.who}
           </div>
-          <div className="body" style={{ fontSize: 16, color: INK, marginTop: 2, whiteSpace: 'nowrap' }}>
-            {m.org}
-          </div>
+          {m.org && (
+            <div className="body" style={{ fontSize: 16, color: INK, marginTop: 2, whiteSpace: 'nowrap' }}>
+              {m.org}
+            </div>
+          )}
         </div>
         <div style={{ textAlign: 'right' }}>
           <div className="mono" style={{ fontSize: 12, color: CORAL }}>
@@ -113,7 +122,7 @@ function Weekend() {
   const shown = ITEMS.filter((it) => t >= it.at);
   const clock = shown.length ? shown[shown.length - 1].clock : 'Thu · noon';
   const photos = shown.filter((it) => it.item.kind === 'photo');
-  const mails = shown.filter((it) => it.item.kind === 'mail').reverse(); // newest on top
+  const mails = shown.filter((it) => it.item.kind === 'mail').reverse().slice(0, 4); // newest on top; the oldest slides out
   const done = t >= ALL_IN;
   return (
     <motion.div style={{ position: 'absolute', inset: 0 }} exit={{ opacity: 0, transition: { duration: 0.5 } }}>
@@ -135,7 +144,7 @@ function Weekend() {
             exit={{ opacity: 0, y: -8, transition: { duration: 0.3 } }}
             transition={{ duration: 0.6, ease }}
           >
-            {done ? 'A working device. Researchers in three countries answering.' : <Words text="From a box of parts…" delay={0.1} />}
+            {done ? 'A working device. Five replies from Spain, Estonia and Lithuania.' : <Words text="From a box of parts…" delay={0.1} />}
           </motion.h2>
         </AnimatePresence>
       </div>
@@ -156,7 +165,7 @@ function Weekend() {
         <div style={{ position: 'absolute', left: 130, top: 880, display: 'flex', gap: 46 }}>
           {[
             ['1', 'working prototype'],
-            ['4', 'replies from researchers'],
+            ['5', 'replies'],
             ['3', 'countries'],
           ].map(([n, l], i) => (
             <motion.div key={l} style={{ display: 'flex', alignItems: 'baseline', gap: 12 }} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease, delay: 0.3 + i * 0.15 }}>
@@ -174,64 +183,129 @@ function Weekend() {
   );
 }
 
-// ---------- Build 1: tested → showed → changed ----------
+// ---------- Build 1: what we learned, and the paper we wrote about it ----------
 const LEARNED = [
   {
     test: 'Can our model cheat?',
-    showed: 'Silence alone predicted Parkinson’s',
-    big: 'AUROC 0.83',
+    big: '0.83',
+    showed: 'AUROC from silence alone: the room gave it away',
     changed: 'We remove the room from every recording.',
   },
   {
-    test: 'Does it work beyond Spanish?',
-    showed: 'Spanish 0.91 · English, never trained on it',
+    test: 'Does it work in other languages?',
     big: '0.79',
-    changed: 'One model for the Spanish-speaking world, and beyond.',
+    showed: 'Trained only on Spanish, tested on English. No retraining.',
+    changed: 'A new language is a calibration, not a new product.',
   },
   {
-    test: 'Can the device scale?',
-    showed: 'A medical-grade ESP32 device — less than a Raspberry Pi 4 alone',
-    big: '€39',
-    changed: 'The prototype proves it; the next version runs on an ESP32.',
+    test: 'Does it follow how she’s doing?',
+    big: 'ρ 0.49',
+    showed: 'Its index tracks motor severity, beyond age',
+    changed: 'It measures change, not just yes or no.',
   },
 ];
 
+// The preprint, set like the studies on the evidence slide.
+const PAPER_TITLE = ['Channel-robust speech biomarkers', 'for between-visit monitoring of', 'Parkinson’s disease: confound', 'control, cross-lingual validation', 'and a personal-baseline tracking rule'];
+const PAPER_FACTS: [string, string][] = [
+  ['14', 'pages'],
+  ['4', 'datasets'],
+  ['3', 'languages'],
+];
+const SHEET = { x: 1236, y: 236, w: 564, h: 700 };
+const ROW_D = 0.7, ROW_GAP = 0.4, SHEET_D = 0.5;
+const ptex = (line: string) => String.raw`\text{${line.replace(/([&%$#_{}])/g, '\\$1')}}`;
+
+function PaperSheet() {
+  const roll = { duration: 1.2, ease: [0.45, 0, 0.2, 1] as [number, number, number, number], delay: SHEET_D };
+  return (
+    <motion.div style={{ position: 'absolute', left: SHEET.x, top: SHEET.y, width: SHEET.w, height: SHEET.h, rotate: 1.2 }}>
+      <motion.div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(180deg, #fffefb 0%, #fbf8f2 100%)',
+          borderRadius: 4,
+          boxShadow: '0 30px 60px rgba(9,38,52,0.16), 0 3px 8px rgba(9,38,52,0.07)',
+          overflow: 'hidden',
+        }}
+        initial={{ clipPath: 'inset(0 0 100% 0)' }}
+        animate={{ clipPath: 'inset(0 0 0% 0)' }}
+        transition={roll}
+      >
+        <div className="mono" style={{ position: 'absolute', left: 40, top: 38, fontSize: 13, color: CORAL }}>
+          Preprint · November 2026
+        </div>
+        <div style={{ position: 'absolute', left: 40, top: 80, display: 'flex', flexDirection: 'column', gap: 7 }}>
+          {PAPER_TITLE.map((line, i) => (
+            <DrawnFormula key={i} tex={ptex(line)} size={25} still color={NAVY} />
+          ))}
+        </div>
+        <div className="body" style={{ position: 'absolute', left: 40, right: 40, top: 300, fontSize: 15, color: INK, lineHeight: 1.4 }}>
+          Reboll Gómez · de Paz Figueras · García López · Verdú García
+        </div>
+        {/* The abstract, as a texture: the page is full. */}
+        <div style={{ position: 'absolute', left: 40, right: 40, top: 360, display: 'flex', flexDirection: 'column', gap: 11 }}>
+          {[1, 0.96, 0.99, 0.93, 1, 0.97, 0.6].map((w, i) => (
+            <div key={i} style={{ height: 7, width: `${w * 100}%`, borderRadius: 4, background: 'rgba(9,38,52,0.08)' }} />
+          ))}
+        </div>
+        <div style={{ position: 'absolute', left: 40, right: 40, bottom: 44, display: 'flex', justifyContent: 'space-between', borderTop: '2px solid rgba(9,38,52,0.1)', paddingTop: 26 }}>
+          {PAPER_FACTS.map(([n, l]) => (
+            <div key={l}>
+              <div className="number" style={{ fontSize: 54, lineHeight: 1, color: NAVY }}>
+                {n}
+              </div>
+              <div className="display" style={{ fontSize: 20, fontWeight: 600, color: TEAL, marginTop: 6 }}>
+                {l}
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function Learned() {
   return (
-    <div style={{ position: 'absolute', left: 120, top: 92, width: 1680 }}>
-      <div className="mono" style={{ fontSize: 18, color: NAVY, display: 'flex', alignItems: 'center', gap: 12 }}>
-        <span style={{ width: 10, height: 10, borderRadius: 5, background: CORAL, display: 'inline-block' }} />
-        What we tested · what we changed
+    <div style={{ position: 'absolute', inset: 0 }}>
+      <div style={{ position: 'absolute', left: 120, top: 92 }}>
+        <div className="mono" style={{ fontSize: 18, color: NAVY, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ width: 10, height: 10, borderRadius: 5, background: CORAL, display: 'inline-block' }} />
+          What we learned
+        </div>
+        <h2 className="display" style={{ fontSize: 60, color: NAVY, marginTop: 14 }}>
+          <Words text="We learned so much, we wrote a paper." delay={0.15} wordClass={(w) => (w === 'paper.' ? 'coral' : undefined)} />
+        </h2>
       </div>
-      <h2 className="display" style={{ fontSize: 64, color: NAVY, marginTop: 14 }}>
-        <Words text="We tested. We learned. We changed." delay={0.2} />
-      </h2>
-      <div style={{ marginTop: 60 }}>
+      <div style={{ position: 'absolute', left: 120, top: 270, width: 1040 }}>
         {LEARNED.map((r, i) => (
           <motion.div
             key={r.test}
-            style={{ display: 'grid', gridTemplateColumns: '440px 600px 1fr', gap: 40, alignItems: 'center', padding: '30px 0', borderTop: '2px solid rgba(9,38,52,0.1)' }}
+            style={{ display: 'grid', gridTemplateColumns: '300px 330px 1fr', gap: 36, alignItems: 'center', padding: '30px 0', borderTop: '2px solid rgba(9,38,52,0.1)' }}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease, delay: 0.8 + i * 0.45 }}
+            transition={{ duration: 0.8, ease, delay: ROW_D + i * ROW_GAP }}
           >
-            <div className="display" style={{ fontSize: 32, fontWeight: 700, color: NAVY }}>
+            <div className="display" style={{ fontSize: 29, fontWeight: 700, color: NAVY, lineHeight: 1.15 }}>
               {r.test}
             </div>
             <div>
-              <div className="number" style={{ fontSize: 58, lineHeight: 1, color: NAVY }}>
+              <div className="number" style={{ fontSize: 56, lineHeight: 1, color: NAVY }}>
                 {r.big}
               </div>
-              <div className="body" style={{ fontSize: 21, color: INK, marginTop: 8 }}>
+              <div className="body" style={{ fontSize: 19, color: INK, marginTop: 8, lineHeight: 1.3 }}>
                 {r.showed}
               </div>
             </div>
-            <div className="display" style={{ fontSize: 30, fontWeight: 700, color: CORAL, lineHeight: 1.2 }}>
+            <div className="display" style={{ fontSize: 27, fontWeight: 700, color: CORAL, lineHeight: 1.2 }}>
               → {r.changed}
             </div>
           </motion.div>
         ))}
       </div>
+      <PaperSheet />
     </div>
   );
 }
@@ -252,9 +326,9 @@ function Content({ build }: { build: number }) {
 export const S17: SlideDef = {
   id: 'S17',
   builds: 2,
-  auto: [11.5],
+  auto: [12.5],
   notes:
-    "On Thursday we had a box of parts. By Thursday evening, a wired prototype; by one in the morning, a device with a body. Meanwhile, we wrote to researchers — and they answered: the University of Tartu in Estonia wants a call, Kaunas University of Technology in Lithuania told us how to validate our model, and the Navarra Parkinson's Association called it a very interesting project. Then we tested. Can our model cheat? Silence alone predicted Parkinson's — so we remove the room from every recording. Does it work beyond Spanish? Trained on Spanish, it recognised Parkinson's in English with no retraining. Can the device scale? The Pi works but costs too much — the next version runs on an ESP32.",
+    "On Thursday we had a box of parts. By one in the morning, a working device. Meanwhile, researchers in Estonia and Lithuania wrote back, the Navarra Parkinson's Association called it a very interesting project, and the neurology team at Gregorio Marañón told us the need is real and so is the market. And we learned so much that we wrote a paper. Our model could cheat by hearing the room, so we remove the room. Trained only on Spanish, it works in English with no retraining: a new language is a calibration, not a new product. And it follows how severe the disease is, so it measures change, not just yes or no.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

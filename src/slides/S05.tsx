@@ -140,7 +140,7 @@ export const S05: SlideDef = {
   id: 'S05',
   builds: 1,
   notes:
-    'VoxWave is a three-minute voice check-in, every morning, at home. This is María’s phone. She holds an “aah” for five seconds. She reads a line, following the words as they light up. And she chats a little about her morning. Done. Each patient is compared only with themselves; when the voice drifts, her neurologist gets an alert and a one-page report. We measure. Doctors decide.',
+    "Every morning, María does a three-minute voice check-in on her phone. She holds an “aah”. She reads a line, following the words as they light up. And she chats a little about her morning. That's it. We measure. Doctors decide.",
   // The voice keeps flowing, low, behind the phone.
   wave: () => ({
     shape: wave({ y: 1000, amp: 22, speed: 0.9 }),

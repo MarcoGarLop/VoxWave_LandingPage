@@ -4,7 +4,7 @@ import { Logo } from '../brand/Logo';
 import type { SlideDef } from '../deck/types';
 import { put } from '../engine/paint';
 import { wave } from '../engine/shapes';
-import { At, Words } from '../ui/motion';
+import { At } from '../ui/motion';
 
 const ease = EASE as unknown as [number, number, number, number];
 
@@ -14,16 +14,10 @@ const CORE: [number, number] = [960, 605];
 function Content({ build }: { build: number }) {
   return (
     <div className="content">
-      <div style={{ position: 'absolute', left: 0, right: 0, top: build < 1 ? 340 : 250, textAlign: 'center', transition: 'top 1.6s cubic-bezier(.22,1,.36,1)' }}>
-        <h2 className="display" style={{ fontSize: 76 }}>
-          <Words text="This is why we created" delay={0.3} />
-        </h2>
-      </div>
-
       <At build={build} at={1}>
         <motion.div
           key="logo"
-          style={{ position: 'absolute', left: 0, right: 0, top: 400, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+          style={{ position: 'absolute', left: 0, right: 0, top: 300, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.1, ease, delay: 0.5 }}
@@ -53,7 +47,8 @@ export const S04B: SlideDef = {
   builds: 2,
   // The voice charges up across the whole width; then the page dawns over it.
   auto: [3.0],
-  notes: 'This is why we created VoxWave.',
+  notes:
+    "This is VoxWave.",
   theme: (b) => (b === 1 ? 'light' : 'dark'),
   wave: (b) => ({
     // Three voices braided together, the energy building — never squeezed into a point.

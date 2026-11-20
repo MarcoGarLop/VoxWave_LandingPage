@@ -51,7 +51,7 @@ export const S01: SlideDef = {
   builds: 2,
   auto: [4],
   notes:
-    "Meet María. She's sixty-eight, she lives in Madrid, and she has Parkinson's. Her last neurology visit was six months ago. Since then, nobody has measured how she's doing.",
+    "Meet María. She's sixty-eight, she lives in Madrid, and she has Parkinson's. Her last neurology visit was six months ago. Since then, nobody has measured how she is doing.",
   bg: () => ({ poolStrength: 1, warm: 1, pool: [0.64, 0.46] }),
   wave: (b) => {
     if (b === 0) {

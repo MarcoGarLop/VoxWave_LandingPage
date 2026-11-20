@@ -198,7 +198,7 @@ export const S16: SlideDef = {
   // The clip drives the first build; it advances itself when it ends.
   auto: [Infinity],
   notes:
-    "Where we grow. We start in Spain: more than two hundred thousand patients. Then we cross the Atlantic to the US Hispanic community: sixty-eight million people, with the highest Parkinson's incidence. Together, the Spanish-speaking world is about two point three million patients — over a billion euros a year. And beyond that, the world: twelve million, because an “aah” sounds the same in every language. What stands in the way? Regulation: CE mark in year two, FDA in year three. Reimbursement, country by country: private clinics pay directly first. And every variety of Spanish: we validate with real clinical voices, starting at Gregorio Marañón. Once we clear them, they protect us.",
+    "From Spain, to two point three million Spanish-speaking patients, to twelve million worldwide. What stands in the way? Regulation: we build for the CE mark and the FDA from day one. Reimbursement: private clinics pay first. And every variety of Spanish: we validate with real clinical voices. Once we clear these barriers, they protect us.",
   theme: () => 'black',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

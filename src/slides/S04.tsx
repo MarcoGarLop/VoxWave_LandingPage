@@ -183,7 +183,7 @@ export const S04: SlideDef = {
   builds: 3,
   auto: [3.8, 3.8],
   notes:
-    "Neurology is saturated: in Spain, the average wait just for a first appointment is a hundred and eleven days. Between visits, small changes go unnoticed until they become a fall, an infection, an emergency. Seven in ten Parkinson's admissions are emergencies, and each one costs thousands of euros. The problem is not a lack of treatment. It's a lack of information between visits.",
+    "Meanwhile, in Spain, the wait for a first neurology visit is a hundred and eleven days. Between visits, nobody is watching. Small changes go unnoticed until they become an emergency: seven in ten Parkinson's admissions are emergencies. The problem isn't a lack of treatment. It's a lack of information between visits.",
   wave: (b) => {
     if (b === 0) {
       // The ten voices merge into one life on a timeline; between the visits it goes silent.
