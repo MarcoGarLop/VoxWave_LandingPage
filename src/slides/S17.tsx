@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { C, EASE } from '../brand/tokens';
 import type { SlideDef } from '../deck/types';
 import { wave } from '../engine/shapes';
-import { DrawnFormula } from '../ui/DrawnFormula';
+import { DrawnFormula, prewarmTex } from '../ui/DrawnFormula';
 import { At, Words } from '../ui/motion';
 
 const ease = EASE as unknown as [number, number, number, number];
@@ -215,6 +215,8 @@ const PAPER_FACTS: [string, string][] = [
 const SHEET = { x: 1236, y: 236, w: 564, h: 700 };
 const ROW_D = 0.7, ROW_GAP = 0.4, SHEET_D = 0.5;
 const ptex = (line: string) => String.raw`\text{${line.replace(/([&%$#_{}])/g, '\\$1')}}`;
+
+prewarmTex(PAPER_TITLE.map(ptex));
 
 function PaperSheet() {
   const roll = { duration: 1.2, ease: [0.45, 0, 0.2, 1] as [number, number, number, number], delay: SHEET_D };

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { C, EASE } from '../brand/tokens';
 import type { SlideDef } from '../deck/types';
 import { wave } from '../engine/shapes';
-import { DrawnFormula } from '../ui/DrawnFormula';
+import { DrawnFormula, prewarmTex } from '../ui/DrawnFormula';
 import { Counter, Words } from '../ui/motion';
 
 const ease = EASE as unknown as [number, number, number, number];
@@ -99,6 +99,7 @@ const MODEL = [
   { label: 'VoxWave voice index', tex: String.raw`\mathrm{index}=100\,\sigma\!\left(w^{\top}z+b\right)` },
   { label: 'Alert on her own baseline', tex: String.raw`z_w=\frac{V_w-m}{s}\geq 1.5\ \text{for 3 weeks}` },
 ];
+prewarmTex([...METRICS.map((m) => m.tex), ...MODEL.map((m) => m.tex)]);
 
 // ---------- Helpers ----------
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));

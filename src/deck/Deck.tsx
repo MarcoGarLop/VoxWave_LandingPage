@@ -4,7 +4,7 @@ import { H, W } from '../brand/tokens';
 import { Engine } from '../engine/Engine';
 import { slides } from '../slides';
 import { AdvanceContext, EngineContext } from './engineContext';
-import { preload } from '../media/preload';
+import { boot, bootBlocksKeys, hideBoot, waitForStart } from './boot';
 
 /** Default seconds a build stays before the next plays by itself. */
 const DEFAULT_HOLD = 6;
@@ -42,6 +42,8 @@ export function Deck() {
   const posRef = useRef(pos);
   posRef.current = pos;
   const [blackout, setBlackout] = useState(false);
+  /** False while the boot screen is up: nothing plays until the presenter starts. */
+  const [live, setLive] = useState(false);
   const first = useRef(true);
   const prevPos = useRef<Pos>(pos);
 
@@ -52,8 +54,18 @@ export function Deck() {
     if (import.meta.env.DEV) (window as unknown as { __engine: Engine }).__engine = engine;
     engine.background.loadAtmosphere('/media/atmosphere/haze.mp4', '/media/atmosphere/plate.jpg');
     engine.start();
-    preload();
-    return () => engine.dispose();
+    let cancelled = false;
+    boot(engine).then(async () => {
+      // A fresh open waits for the presenter; a reload mid-deck (#N.b) carries straight on.
+      if (!location.hash) await waitForStart();
+      if (cancelled) return;
+      hideBoot();
+      setLive(true);
+    });
+    return () => {
+      cancelled = true;
+      engine.dispose();
+    };
   }, []);
 
   // Drawing-buffer size follows the on-screen size of the stage (capped for laptops).
@@ -68,7 +80,7 @@ export function Deck() {
   // Send the target state of the current slide/build to the engine.
   useEffect(() => {
     const e = engineRef.current;
-    if (!e) return;
+    if (!e || !live) return;
     const s = slides[pos.i];
     const p0 = prevPos.current;
     const forward = pos.i > p0.i || (pos.i === p0.i && pos.b > p0.b);
@@ -84,17 +96,17 @@ export function Deck() {
     if (s.bg) e.setBackground({ ...s.bg(pos.b), ...(first.current ? { duration: 1 } : {}) });
     first.current = false;
     history.replaceState(null, '', `#${pos.i + 1}.${pos.b}`);
-  }, [pos]);
+  }, [pos, live]);
 
   // Builds inside a slide play by themselves: one click = one whole slide.
   useEffect(() => {
     const s = slides[pos.i];
-    if (pos.b >= s.builds - 1) return;
+    if (!live || pos.b >= s.builds - 1) return;
     const hold = s.auto?.[pos.b] ?? DEFAULT_HOLD;
     if (hold === Infinity) return; // the slide advances itself (useAdvance)
     const id = window.setTimeout(() => setPos((p) => (p.i === pos.i && p.b === pos.b ? { i: p.i, b: p.b + 1 } : p)), hold * 1000);
     return () => window.clearTimeout(id);
-  }, [pos]);
+  }, [pos, live]);
 
   const next = useCallback(() => {
     setPos((p) => (p.i < slides.length - 1 ? { i: p.i + 1, b: 0 } : p));
@@ -116,7 +128,7 @@ export function Deck() {
 
   useEffect(() => {
     const onKey = (ev: KeyboardEvent) => {
-      if (ev.repeat) return;
+      if (ev.repeat || bootBlocksKeys(ev)) return;
       // Enter on a slide with a link (the live demo) opens it instead of advancing.
       if (ev.key === 'Enter') {
         const p = posRef.current;
@@ -175,9 +187,9 @@ export function Deck() {
         <AdvanceContext.Provider value={advance}>
         <div className="layer">
           <AnimatePresence mode="wait">
-            <motion.div key={slide.id} className="layer" exit={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+            {live && <motion.div key={slide.id} className="layer" exit={{ opacity: 1 }} transition={{ duration: 0.5 }}>
               <Content build={pos.b} />
-            </motion.div>
+            </motion.div>}
           </AnimatePresence>
         </div>
         </AdvanceContext.Provider>

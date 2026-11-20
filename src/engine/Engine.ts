@@ -162,6 +162,33 @@ export class Engine {
     this.background.to(s.duration ? { ...s, duration: s.duration * PACE } : s, this.now());
   }
 
+  /**
+   * Compile every shader up front (behind the boot screen), including the ones for
+   * things that are hidden now — the device, the globe, the echoes — so the first
+   * time they appear mid-pitch there is no stall.
+   */
+  async warm() {
+    const hidden: THREE.Object3D[] = [];
+    const show = (root: THREE.Object3D) =>
+      root.traverse((o) => {
+        if (!o.visible) {
+          hidden.push(o);
+          o.visible = true;
+        }
+      });
+    show(this.scene);
+    show(this.background.scene);
+    try {
+      await this.renderer.compileAsync(this.scene, this.camera);
+      await this.renderer.compileAsync(this.background.scene, this.background.camera);
+    } catch {
+      /* fall back to compiling on first use */
+    }
+    show(this.scene); // the render loop may have hidden things again meanwhile
+    this.composer.render(); // links the programs and the post-processing passes
+    for (const o of hidden) o.visible = false;
+  }
+
   /** True while a fullscreen video hides the canvas. */
   suspended = false;
 

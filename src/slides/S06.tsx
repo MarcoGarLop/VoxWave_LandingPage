@@ -2,7 +2,7 @@ import { motion } from 'motion/react';
 import { C, EASE } from '../brand/tokens';
 import type { SlideDef } from '../deck/types';
 import { wave } from '../engine/shapes';
-import { DrawnFormula } from '../ui/DrawnFormula';
+import { DrawnFormula, prewarmTex } from '../ui/DrawnFormula';
 
 const ease = EASE as unknown as [number, number, number, number];
 
@@ -43,6 +43,8 @@ const SHEET_GAP = 18;
 const sheetTop = (k: number) => SHEETS_TOP + PAPERS.slice(0, k).reduce((a, p) => a + sheetH(p.title.length) + SHEET_GAP, 0);
 
 const tex = (line: string) => String.raw`\text{${line.replace(/([&%$#_{}])/g, '\\$1')}}`;
+
+prewarmTex(PAPERS.flatMap((p) => p.title).map(tex));
 
 /** A sheet that unrolls downwards from a paper roll, then the roll vanishes. */
 function Sheet({ k }: { k: number }) {
@@ -135,7 +137,8 @@ function Stamp({ k }: { k: number }) {
       />
       {/* The stamp: drops from above, hits, settles with a tiny rebound. */}
       <motion.div
-        style={{ position: 'absolute', inset: 0, transformOrigin: '50% 50%' }}
+        // Own GPU layer: the inked (filtered) edge is painted once, not on every frame of the drop.
+        style={{ position: 'absolute', inset: 0, transformOrigin: '50% 50%', willChange: 'transform, opacity' }}
         initial={{ opacity: 0, scale: 1.55, rotate: s.rot - 7, y: -30 }}
         animate={{ opacity: [0, 1, 1, 1], scale: [1.55, 0.97, 1.015, 1], rotate: [s.rot - 7, s.rot + 0.4, s.rot - 0.1, s.rot], y: [-30, 0, 0, 0] }}
         transition={{ duration: 0.75, delay: d, times: [0, 0.42, 0.7, 1], ease: [0.5, 0, 0.75, 0] }}

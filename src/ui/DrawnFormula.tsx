@@ -23,6 +23,25 @@ function tex2svg(tex: string) {
 }
 
 /**
+ * Slides register their formulas when they load; the boot screen typesets them
+ * all, so no slide stalls on MathJax the first time it appears.
+ */
+const queued: string[] = [];
+export function prewarmTex(list: string[]) {
+  queued.push(...list);
+}
+export async function warmMath() {
+  while (queued.length) {
+    try {
+      tex2svg(queued.shift()!);
+    } catch {
+      /* a bad formula shows up on its slide, not here */
+    }
+    await new Promise((r) => setTimeout(r, 0));
+  }
+}
+
+/**
  * A formula that draws itself by hand: every glyph is traced as a thin line,
  * stroke by stroke, then fills in with ink.
  */
