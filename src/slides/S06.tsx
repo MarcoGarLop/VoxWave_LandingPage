@@ -35,8 +35,8 @@ const stampX = (k: number) => 120 + k * (STAMP.w + 120);
 
 // Researchers we're talking to: lighter than the two stamps, but on the page.
 const UNIS = [
-  { name: 'University of Tartu', country: 'Estonia' },
-  { name: 'Kaunas University of Technology', country: 'Lithuania' },
+  { name: 'University of Tartu', country: 'Estonia', logo: '/media/partners/tartu.png', h: 64 },
+  { name: 'Kaunas University of Technology', country: 'Lithuania', logo: '/media/partners/ktu.png', h: 50 },
 ];
 
 function Stamp({ k }: { k: number }) {
@@ -116,7 +116,8 @@ function Content() {
         </div>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 70, marginTop: 18, whiteSpace: 'nowrap' }}>
           {UNIS.map((u) => (
-            <div key={u.name}>
+            <div key={u.name} style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <img src={u.logo} alt="" style={{ height: u.h, display: 'block' }} />
               <span className="display" style={{ fontSize: 30, fontWeight: 600, color: NAVY }}>
                 {u.name}
               </span>

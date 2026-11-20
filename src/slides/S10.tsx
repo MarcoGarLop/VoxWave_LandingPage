@@ -35,7 +35,7 @@ const ALERTS_VOX = [0.7, 1.6, 2.6, 3.3, 4.1, 5.0, 5.6];
 const KPIS = [
   { goal: 'Better triage', big: '≈ 3 weeks', line: 'From a sustained drift to a neurologist’s review. Today: 90 – 180 days.', primary: true },
   { goal: 'Fewer emergency admissions', big: '7 in 10', line: 'Parkinson’s admissions are emergencies today. We measure the drop against usual care.' },
-  { goal: 'Savings for hospitals', big: '> 3.4%', line: 'Cost per patient avoided: stays, emergencies, visits, care. VoxWave pays off above 3.4%.' },
+  { goal: 'Savings for hospitals', big: '€50 / mo', line: 'Cost per patient avoided: stays, emergencies, visits, care. VoxWave pays off above 3.4%.' },
   { goal: 'Better lives', big: 'PDQ-8', line: 'Quality of life, measured every three months against usual care.' },
 ];
 const COL_W = 400, COL_X0 = 120, COL_GAP = 26;
@@ -184,9 +184,6 @@ function Kpi({ k }: { k: number }) {
       >
         {m.big}
       </motion.div>
-      <div className="body" style={{ fontSize: 22, lineHeight: 1.4, marginTop: 20, color: 'rgba(9,38,52,0.72)', maxWidth: 370 }}>
-        {m.line}
-      </div>
     </motion.div>
   );
 }

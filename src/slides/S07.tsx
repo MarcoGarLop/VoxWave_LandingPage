@@ -20,7 +20,7 @@ const PARTS: { at: [number, number]; side: 'l' | 'r'; title: string; body: strin
   { at: [736, 446], side: 'l', title: 'Lavalier microphone', body: 'Close to the voice, USB' },
   { at: [746, 716], side: 'l', title: 'Slim power bank', body: 'Inside the case, no cables' },
   { at: [1130, 352], side: 'r', title: '1.3″ OLED screen', body: 'Guides each exercise' },
-  { at: [1215, 510], side: 'r', title: 'Raspberry Pi 4', body: 'Records and stores sessions offline' },
+  { at: [1215, 510], side: 'r', title: 'ESP32 microprocessor', body: 'Records and stores sessions offline' },
   { at: [1270, 800], side: 'r', title: '3D-printed case', body: '7 × 12 × 4 cm' },
 ];
 const COL_L = 600, COL_R = 1330;

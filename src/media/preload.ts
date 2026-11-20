@@ -22,6 +22,9 @@ export const IMAGES = [
   '/media/weekend/joonas.png',
   '/media/weekend/evaldas2.png',
   '/media/weekend/cristina.png',
+  '/media/partners/tartu.png',
+  '/media/partners/ktu.png',
+  '/media/qr_demo.svg',
 ];
 
 /** Starts (once) fetching each clip into memory; resolves per clip, never rejects. */

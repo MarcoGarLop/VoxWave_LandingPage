@@ -10,9 +10,9 @@ const ease = EASE as unknown as [number, number, number, number];
 
 /**
  * Follow the money, on paper.
- * A thin trickle of €40 runs from the clinic to VoxWave; the daily check-in runs
- * from VoxWave to María, who pays €0; and a wide river of savings — €4,400 per
- * avoided stay — flows back to the clinic. Later, insurers. Then everyone's win.
+ * €40 a patient a month flows from the clinic to VoxWave; the daily check-in runs
+ * from VoxWave to María, who pays €0; and a wider band of savings — about €50 a
+ * patient a month — flows back to the clinic. Widths are to scale. Later, insurers.
  */
 
 const NAVY = C.navy, TEAL = C.teal, CORAL = C.coral;
@@ -25,7 +25,7 @@ const T = { head: 0.15, nodes: 0.45, fee: 1.2, care: 2.5, zero: 3.4, river: 4.1,
 type NodeKey = 'maria' | 'clinic' | 'vox' | 'insurer';
 const NODES: Record<NodeKey, { x: number; y: number; name: string; role: string; win: string; delay: number }> = {
   maria: { x: 330, y: 500, name: 'María', role: 'Patient', win: '€0 · someone listens every day', delay: 0 },
-  clinic: { x: 960, y: 500, name: 'Clinic or hospital', role: 'Pays', win: 'Fewer emergencies · more patients, same team', delay: 0.15 },
+  clinic: { x: 960, y: 500, name: 'Clinic or hospital', role: 'Pays', win: 'Saves €50 for every €40 it pays', delay: 0.15 },
   vox: { x: 1590, y: 500, name: 'VoxWave', role: 'Paid monthly', win: 'Recurring revenue · ≈ 70% gross margin', delay: 0.3 },
   insurer: { x: 1300, y: 806, name: 'Insurers', role: 'Next', win: 'Every avoided stay is a direct saving', delay: 0 },
 };
@@ -113,23 +113,25 @@ function Flows({ t }: { t: number }) {
   return (
     <svg width={1920} height={1080} style={{ position: 'absolute', inset: 0, overflow: 'visible' }}>
       {/* tracks */}
-      <path d={pathD(FEE)} fill="none" stroke="rgba(9,38,52,0.16)" strokeWidth={2} opacity={fee} />
+      <path d={pathD(FEE)} fill="none" stroke="rgba(9,38,52,0.09)" strokeWidth={42} strokeLinecap="round" opacity={fee} />
       <path d={pathD(RIVER)} fill="none" stroke="rgba(255,110,66,0.14)" strokeWidth={52} strokeLinecap="round" opacity={river} />
       <path d={pathD(LATER)} fill="none" stroke="rgba(9,38,52,0.25)" strokeWidth={2} strokeDasharray="4 8" opacity={later} />
 
-      {/* €40: a thin, steady trickle of navy coins */}
+      {/* €40 a month: a band of navy coins, to scale with the savings */}
       {fee > 0 &&
-        Array.from({ length: 12 }, (_, i) => {
-          const s = ((t - T.fee) * 0.16 + i / 12) % 1;
+        Array.from({ length: 115 }, (_, i) => {
+          const s = ((t - T.fee) * 0.2 + hash(i + 271)) % 1;
           const [x, y] = bez(FEE, s);
-          const fade = Math.min(1, s * 8, (1 - s) * 8);
-          return <circle key={`f${i}`} cx={x} cy={y} r={4} fill={NAVY} opacity={fee * fade} />;
+          const [nx, ny] = norm(FEE, s);
+          const o = (hash(i + 3301) - 0.5) * 34;
+          const fade = Math.min(1, s * 6, (1 - s) * 6);
+          return <circle key={`f${i}`} cx={x + nx * o} cy={y + ny * o} r={2.8 + hash(i + 911) * 2.2} fill={NAVY} opacity={fee * fade * 0.8} />;
         })}
 
       {/* the check-in wave */}
       {carePts.length > 1 && <polyline points={carePts.join(' ')} fill="none" stroke={CORAL} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />}
 
-      {/* €4,400: a wide river of coral savings flowing back */}
+      {/* ≈ €50 a month: the savings flowing back, a little wider than the fee */}
       {river > 0 &&
         Array.from({ length: 150 }, (_, i) => {
           const s = ((t - T.river) * 0.22 + hash(i)) % 1;
@@ -294,12 +296,12 @@ function Content() {
       <motion.div className="display" style={{ position: 'absolute', left: cx - 200, top: cy + 26, width: 400, textAlign: 'center', fontSize: 22, fontWeight: 600, color: CORAL }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: T.care + 0.8 }}>
         A daily voice check-in
       </motion.div>
-      <motion.div style={{ position: 'absolute', left: rx - 230, top: ry - 150, width: 460, textAlign: 'center' }} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease, delay: T.river + 0.5 }}>
+      <motion.div style={{ position: 'absolute', left: rx - 300, top: ry + 104, width: 600, textAlign: 'center' }} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease, delay: T.river + 0.5 }}>
         <div className="number" style={{ fontSize: 50, lineHeight: 1, color: CORAL }}>
-          €4,400
+          ≈ €50 <span style={{ fontSize: 24 }}>/ patient / month</span>
         </div>
         <div className="display" style={{ fontSize: 20, fontWeight: 600, color: NAVY, marginTop: 6 }}>
-          back for every hospital stay avoided
+          saved: fewer emergencies, visits and complications
         </div>
       </motion.div>
 
@@ -327,7 +329,7 @@ export const S13: SlideDef = {
   id: 'S13',
   builds: 1,
   notes:
-    "The model is simple. The clinic pays forty euros a month per patient: less than a single private neurology visit. María pays nothing. And every hospital stay we help avoid saves about four thousand four hundred euros.",
+    "The model is simple. The hospital pays forty euros a patient a month, less than one private neurology visit. María pays nothing. And about fifty euros a month flows back to the hospital: fewer emergencies, fewer visits, fewer complications. Everyone wins.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

@@ -10,9 +10,10 @@ const ease = EASE as unknown as [number, number, number, number];
 /**
  * Built to last — part 1, on paper.
  * Left, "For us": the contribution line climbs out of the red and crosses zero at
- * break-even. Right, "For the clinic": a balance. VoxWave (€480 a patient-year) lands
- * on one pan; on the other, what Parkinson's costs per patient per year falls block by
- * block (healthcare, family care, lost work ≈ €14,300). VoxWave is 3.4% of that bill.
+ * break-even. Right, "For the hospital": a balance, per patient per month. VoxWave
+ * (€40) lands on one pan; on the other, what better monitoring saves the hospital
+ * (≈ €50: fewer emergency admissions, unplanned visits and complications). The
+ * savings side goes down: every €1 in comes back as €1.25.
  */
 
 const NAVY = C.navy, TEAL = C.teal, CORAL = C.coral;
@@ -27,8 +28,8 @@ const T = {
   line1: 4.2,
   scale: 2.6, // the balance appears
   vox: 3.5, // VoxWave lands on the left pan
-  costs: [4.6, 5.5, 6.2], // what Parkinson's costs, block by block, on the right pan
-  final: 7.3,
+  costs: [4.7], // what the hospital saves lands on the right pan
+  final: 5.9,
 };
 
 // ---------- Left: break-even chart ----------
@@ -40,16 +41,13 @@ const py = (p: number) => CH.zero - ((p - BE) / BE) * CH.half; // straight line 
 // ---------- Right: the balance ----------
 const PIV = { x: 1390, y: 470 };
 const ARM = 250, HANG = 150;
-const VOX = { w: 84, h: 40 };
-// What Parkinson's costs per patient per year in Europe: mean €14,278, split like the
-// COIN-Eu total (76% direct care, 19% informal care, 4% lost work). Movement Disorders 2026.
-const COSTS = [
-  { label: 'Healthcare', sub: 'stays · emergencies · visits · drugs', value: 10840, w: 240, h: 116 },
-  { label: 'Family care', value: 2760, w: 214, h: 50 },
-  { label: 'Lost work', value: 630, w: 160, h: 34 },
-];
-const MEAN = 14278;
-const SHARE = ((480 / MEAN) * 100).toFixed(1); // 3.4
+const VOX = { w: 150, h: 92 };
+// What optimised monitoring saves the hospital, per patient per month (VoxWave estimate,
+// ≈ €600 a year: below the ≈ €920 a year of the published PKG model, Chaudhuri et al. 2022).
+const PRICE = 40;
+const COSTS = [{ label: 'Hospital savings', sub: 'emergencies · visits · complications', value: 50, w: 170, h: 116 }];
+const SAVED = COSTS.reduce((s, c) => s + c.value, 0);
+const RETURN = (SAVED / PRICE).toFixed(2); // 1.25
 const DROP = 0.42; // seconds of free fall
 const eur = (v: number) => `€${Math.round(v).toLocaleString('en-US')}`;
 
@@ -142,9 +140,9 @@ function Balance({ t }: { t: number }) {
   const appear = io(clamp((t - T.scale) / 0.7));
   // Weight on each side (each block counts once it has landed, with a short settle).
   const settle = (land: number) => clamp((t - land) / 0.25);
-  const L = 480 * settle(T.vox);
+  const L = PRICE * settle(T.vox);
   const R = COSTS.reduce((s, c, i) => s + c.value * settle(T.costs[i]), 0);
-  const target = 13 * Math.tanh((R - L) / 3500); // degrees; + = right side down
+  const target = 10 * Math.tanh((R - L) / 8); // degrees; + = right side down
   const ang = useSpring(target, t);
   const a = (ang * Math.PI) / 180;
   const end = (side: -1 | 1): [number, number] => [PIV.x + side * ARM * Math.cos(a), PIV.y + side * ARM * Math.sin(a)];
@@ -174,7 +172,7 @@ function Balance({ t }: { t: number }) {
           <path d={`M${pn.x - 92} ${pn.y} Q${pn.x} ${pn.y + 34} ${pn.x + 92} ${pn.y}`} stroke={NAVY} strokeWidth={6} fill="none" strokeLinecap="round" />
         </g>
       ))}
-      {/* VoxWave: €480, one patient for a year */}
+      {/* VoxWave: €40, one patient for a month */}
       {t >= T.vox - DROP &&
         (() => {
           const y = fall(T.vox, lPan.y, -VOX.h - 6);
@@ -182,9 +180,12 @@ function Balance({ t }: { t: number }) {
           const hit = Math.exp(-Math.pow((t - T.vox) * 7, 2));
           return (
             <g opacity={clamp((t - (T.vox - DROP)) / 0.15)}>
-              <rect x={x} y={y} width={VOX.w} height={VOX.h} rx={9} fill={CORAL} />
-              <text x={x + VOX.w / 2} y={y + 27} textAnchor="middle" fontFamily="Sora, sans-serif" fontWeight={700} fontSize={19} fill="#fff">
-                €480
+              <rect x={x} y={y} width={VOX.w} height={VOX.h} rx={14} fill={NAVY} />
+              <text x={x + VOX.w / 2} y={y + 38} textAnchor="middle" fontFamily="Sora, sans-serif" fontWeight={700} fontSize={20} fill="#fbf9f5">
+                VoxWave
+              </text>
+              <text x={x + VOX.w / 2} y={y + 74} textAnchor="middle" fontFamily="Sora, sans-serif" fontWeight={700} fontSize={32} fill="#fbf9f5">
+                €40
               </text>
               {hit > 0.02 && <rect x={x - 4} y={y - 4} width={VOX.w + 8} height={VOX.h + 8} rx={12} fill="none" stroke={CORAL} strokeWidth={2} opacity={hit} />}
             </g>
@@ -201,24 +202,21 @@ function Balance({ t }: { t: number }) {
         const big = i === 0;
         return (
           <g key={c.label} opacity={clamp((t - (land - DROP)) / 0.15)}>
-            {big && hit > 0.02 && <ellipse cx={rPan.x} cy={rPan.y + 8} rx={110 + (1 - hit) * 60} ry={14} fill="none" stroke={NAVY} strokeWidth={2} opacity={hit * 0.6} />}
-            <rect x={x} y={y} width={c.w} height={c.h} rx={big ? 14 : 9} fill={NAVY} opacity={big ? 1 : i === 1 ? 0.82 : 0.66} />
+            {big && hit > 0.02 && <ellipse cx={rPan.x} cy={rPan.y + 8} rx={110 + (1 - hit) * 60} ry={14} fill="none" stroke={CORAL} strokeWidth={2} opacity={hit * 0.6} />}
+            <rect x={x} y={y} width={c.w} height={c.h} rx={big ? 14 : 9} fill={CORAL} opacity={big ? 1 : i === 1 ? 0.82 : 0.66} />
             {big && (
               <>
                 <rect x={x + 22} y={y + 20} width={8} height={24} rx={2} fill="#fbf9f5" />
                 <rect x={x + 14} y={y + 28} width={24} height={8} rx={2} fill="#fbf9f5" />
               </>
             )}
-            <text x={big ? x + 50 : x + c.w / 2} y={big ? y + 40 : y + c.h / 2 + 7} textAnchor={big ? 'start' : 'middle'} fontFamily="Sora, sans-serif" fontWeight={700} fontSize={big ? 22 : i === 1 ? 16 : 14} fill="#fbf9f5">
-              {big ? c.label : `${c.label} ${eur(c.value)}`}
+            <text x={big ? x + 46 : x + c.w / 2} y={big ? y + 40 : y + c.h / 2 + 7} textAnchor={big ? 'start' : 'middle'} fontFamily="Sora, sans-serif" fontWeight={700} fontSize={big ? 20 : 14} fill="#fbf9f5">
+              {big ? 'Saved' : `${c.label} ${eur(c.value)}`}
             </text>
             {big && (
               <>
-                <text x={x + c.w / 2} y={y + 80} textAnchor="middle" fontFamily="Sora, sans-serif" fontWeight={700} fontSize={30} fill="#fbf9f5">
-                  {eur(c.value)}
-                </text>
-                <text x={x + c.w / 2} y={y + 102} textAnchor="middle" fontFamily="Inter, sans-serif" fontSize={13} fill="rgba(251,249,245,0.75)">
-                  {c.sub}
+                <text x={x + c.w / 2} y={y + 84} textAnchor="middle" fontFamily="Sora, sans-serif" fontWeight={700} fontSize={36} fill="#fbf9f5">
+                  ≈ {eur(c.value)}
                 </text>
               </>
             )}
@@ -227,10 +225,10 @@ function Balance({ t }: { t: number }) {
       })}
       {/* pan captions */}
       <text x={lPan.x} y={lPan.y + 66} textAnchor="middle" fontFamily="Inter, sans-serif" fontSize={20} fill={CORAL} opacity={clamp((t - T.vox) / 0.5)}>
-        VoxWave · one patient, one year
+        What the hospital pays
       </text>
       <text x={rPan.x} y={rPan.y + 66} textAnchor="middle" fontFamily="Inter, sans-serif" fontSize={20} fill={INK} opacity={clamp((t - T.costs[0]) / 0.5)}>
-        Parkinson’s, per patient, per year
+        What it saves
       </text>
     </svg>
   );
@@ -258,7 +256,7 @@ function Content() {
         {status}
       </motion.div>
       <h2 className="display" style={{ position: 'absolute', left: 120, top: 104, fontSize: 52, color: NAVY }}>
-        <Words text="Clinics pay, not grants. And it saves them money." delay={T.head} />
+        <Words text="Clinics pay, not grants. And they get more back." delay={T.head} />
       </h2>
 
       {/* divider */}
@@ -291,15 +289,15 @@ function Content() {
       {/* ---- For the clinic ---- */}
       <motion.div style={{ position: 'absolute', left: 1040, top: 232 }} {...rise(T.cols + 0.15)}>
         <div className="mono" style={{ fontSize: 17, color: CORAL }}>
-          For the clinic
+          For the hospital · per patient, per month
         </div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginTop: 6 }}>
           <span className="number" style={{ fontSize: 86, lineHeight: 1, color: t >= T.final ? CORAL : NAVY, transition: 'color .4s' }}>
-            {t < T.costs[0] ? '€480' : t < T.final ? `€480 vs ${eur(landed)}` : `${SHARE}%`}
+            {t < T.costs[0] ? `€${PRICE}` : t < T.final ? `€${PRICE} → ${eur(landed)}` : `€1 → €${RETURN}`}
           </span>
           {t >= T.final && (
             <motion.span className="display" style={{ fontSize: 26, fontWeight: 600, color: NAVY }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
-              of what Parkinson’s already costs
+              back for every euro
             </motion.span>
           )}
         </div>
@@ -307,10 +305,10 @@ function Content() {
       <Balance t={t} />
       <motion.div style={{ position: 'absolute', left: 1040, top: 832, width: 790 }} {...rise(T.final)}>
         <div className="display" style={{ fontSize: 25, fontWeight: 600, color: CORAL, lineHeight: 1.25 }}>
-          Catch changes early, trim that bill by just {SHARE}%, and VoxWave pays for itself.
+          Catch changes early: fewer emergencies, fewer unplanned visits. VoxWave pays for itself, and then some.
         </div>
-        <div className="body" style={{ fontSize: 18, marginTop: 10, color: INK }}>
-          Mean cost per patient in Europe: €14,278 a year · COIN-Eu, Movement Disorders 2026
+        <div className="body" style={{ fontSize: 17, marginTop: 10, color: INK }}>
+          VoxWave estimate, ≈ €600 a patient a year · below published models (≈ €920 a year, Chaudhuri et al. 2022)
         </div>
       </motion.div>
     </div>
@@ -321,7 +319,7 @@ export const S11: SlideDef = {
   id: 'S11',
   builds: 1,
   notes:
-    "And it's built to last. Clinics pay, not grants, and we break even at three hundred and forty patients. Parkinson's already costs over fourteen thousand euros per patient every year. VoxWave is three point four percent of that bill.",
+    "And it's built to last. Clinics pay, not grants, and we break even at three hundred and forty patients. For the hospital, the maths is simple: VoxWave costs forty euros a patient a month, and better monitoring saves about fifty. Every euro comes back as one euro twenty-five.",
 
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),

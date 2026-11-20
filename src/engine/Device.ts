@@ -180,7 +180,7 @@ export class Device {
     box(3, 7, 3, metal, -26.5, 0);
     box(3, 7, 3, metal, -26.5, -12);
     pi.position.z = -6 * MM;
-    this.add(pi, -50, 0, 0, 'Raspberry Pi 4', new THREE.Vector3(pw / 2, ph * 0.1, 8));
+    this.add(pi, -50, 0, 0, 'ESP32 microprocessor', new THREE.Vector3(pw / 2, ph * 0.1, 8));
 
     // ---- Lavalier microphone with fur windscreen ----
     const micG = new THREE.Group();
