@@ -8,7 +8,7 @@ import { Counter } from '../ui/motion';
 const ease = EASE as unknown as [number, number, number, number];
 
 /**
- * Day 9 — the impact, on paper.
+ * Week 3 — the impact, on paper.
  * María's voice, day by day since her last visit, inside her own baseline band.
  * Suddenly it drops. Nine days later the alert fires and her next visit — pinned on
  * the timeline at day 180 — slides back to just after the alert. After that earlier
@@ -20,7 +20,7 @@ const GREY = 'rgba(9,38,52,0.32)';
 
 // ---------- Story (days since the last visit) ----------
 const ONSET = 100; // the voice starts to drift
-const ALERT = ONSET + 9; // "Day 9": sustained drift confirmed, neurologist notified
+const ALERT = ONSET + 21; // "Week 3": drift sustained 3 weeks (paper's alert rule), neurologist notified
 const VISIT_OLD = 180; // next scheduled visit (6 months)
 const VISIT_NEW = ALERT + 5; // the visit, moved forward
 const LAST = 180;
@@ -128,9 +128,9 @@ function Chart({ t }: { t: number }) {
       <Trace f={without} a={ALERT} b={dAfter} ghost />
       {t >= T.after0 && (
         <motion.text
-          x={xd(146)}
+          x={xd(138)}
           y={yv(-3.1)}
-          textAnchor="middle"
+          textAnchor="start"
           fontFamily="Inter, sans-serif"
           fontSize={22}
           fill="rgba(9,38,52,0.5)"
@@ -240,7 +240,7 @@ function AlertCard() {
           Trend change detected
         </div>
         <div className="body" style={{ fontSize: 21, marginTop: 8, color: 'rgba(9,38,52,0.7)' }}>
-          Day 9 of the drift · her neurologist is notified
+          Week 3 of the drift · her neurologist is notified
         </div>
       </div>
     </motion.div>
@@ -252,7 +252,7 @@ function Stats() {
     <div style={{ position: 'absolute', left: 170, top: 880, display: 'flex', gap: 110, alignItems: 'flex-end' }}>
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease, delay: T.stats }}>
         <div className="number" style={{ fontSize: 92, lineHeight: 1, color: CORAL }}>
-          <Counter to={9} duration={0.9} delay={T.stats} format={(v) => `${Math.round(v)} days`} />
+          <Counter to={3} duration={0.9} delay={T.stats} format={(v) => `${Math.round(v)} weeks`} />
         </div>
         <div className="display" style={{ fontSize: 26, fontWeight: 600, marginTop: 10, color: NAVY }}>
           to catch the change, with VoxWave
@@ -304,7 +304,7 @@ export const S09: SlideDef = {
   id: 'S09',
   builds: 1,
   notes:
-    "This is María, every day since her last visit, inside her own baseline. Suddenly her voice starts to drift. On day nine of that drift, the change is confirmed and her neurologist is notified — so her next visit moves forward from day one hundred and eighty to day one hundred and fourteen. Treatment is adjusted, and her voice comes back to baseline. Without VoxWave, that change goes unnoticed until the next visit: eighty days later. That's our main indicator: days from the first sustained change to a neurologist's review. Today it's months. Our target: under fourteen days.",
+    "This is María, every day since her last visit, inside her own baseline. Suddenly her voice starts to drift. After three weeks of sustained drift, the change is confirmed and her neurologist is notified — so her next visit moves forward from day one hundred and eighty to day one hundred and twenty-six. Treatment is adjusted, and her voice comes back to baseline. Without VoxWave, that change goes unnoticed until the next visit: eighty days later. That's our main indicator: days from the first sustained change to a neurologist's review. Today it's months. Our target: about three weeks — instead of three to six months.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

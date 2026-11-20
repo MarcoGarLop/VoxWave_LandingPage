@@ -52,7 +52,7 @@ const DOTS = (() => {
 const ACTORS = [
   { tag: 'First customers', name: 'Private neurology clinics', logo: 'clinic' as const, rot: -2.2 },
   { tag: 'Clinical validation', name: 'Gregorio Marañón', logo: '/media/partners/maranon_color.svg', rot: 1.6 },
-  { tag: 'Reaching patients', name: 'Spanish Parkinson’s Federation', logo: '/media/partners/fep_color.png', rot: -1.2 },
+  { tag: 'Reaching patients', name: 'Asociación Navarra de Parkinson', logo: '/media/partners/fep_color.png', rot: -1.2 },
 ];
 const STAMP = { w: 520, h: 214, top: 776 };
 const stampX = (k: number) => 120 + k * (STAMP.w + 60);
@@ -275,7 +275,7 @@ export const S12: SlideDef = {
   id: 'S12',
   builds: 1,
   notes:
-    "Why now? Patients double — from twelve to twenty-five million by 2050 — while the number of neurologists has stagnated: Spain is already about eight hundred short. The gap between them is every patient nobody monitors between visits. That gap is our market. And everyone we need wants in: private neurology clinics, our first customers; Gregorio Marañón, for clinical validation; and the Spanish Parkinson's Federation, to reach patients.",
+    "Why now? Patients double — from twelve to twenty-five million by 2050 — while the number of neurologists has stagnated: Spain is already about eight hundred short. The gap between them is every patient nobody monitors between visits. That gap is our market. And everyone we need wants in: private neurology clinics, our first customers; Gregorio Marañón, for clinical validation; and the Navarra Parkinson's Association, to reach patients.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

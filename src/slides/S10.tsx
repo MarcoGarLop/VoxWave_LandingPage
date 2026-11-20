@@ -33,7 +33,7 @@ const ALERTS_VOX = [0.7, 1.6, 2.6, 3.3, 4.1, 5.0, 5.6];
 
 // ---------- Indicators: what we want, the number that proves it, one line of context ----------
 const KPIS = [
-  { goal: 'Better triage', big: '< 14 days', line: 'From the first drift to a neurologist’s review. Today: 90 – 180.', primary: true },
+  { goal: 'Better triage', big: '≈ 3 weeks', line: 'From a sustained drift to a neurologist’s review. Today: 90 – 180 days.', primary: true },
   { goal: 'Fewer emergency admissions', big: '7 in 10', line: 'Parkinson’s admissions are emergencies today. We measure the drop against usual care.' },
   { goal: 'Savings for hospitals', big: '> 3.4%', line: 'Cost per patient avoided: stays, emergencies, visits, care. VoxWave pays off above 3.4%.' },
   { goal: 'Better lives', big: 'PDQ-8', line: 'Quality of life, measured every three months against usual care.' },
@@ -248,7 +248,7 @@ export const S10: SlideDef = {
   id: 'S10',
   builds: 1,
   notes:
-    "How will we prove it? With a clinical pilot we're proposing with Gregorio Marañón: sixty patients for six months, against a matched control group with usual care. We'll measure four things. Fewer emergency admissions, against the control group. Savings: we measure the cost per patient we avoid — stays, emergencies, visits, care. Parkinson’s costs over fourteen thousand euros per patient a year; VoxWave pays off above three point four percent. Better triage — our primary indicator: the days from the first sustained change to a neurologist's review, under fourteen, from three to six months today. And better lives, measured with the PDQ-8 quality-of-life scale. Then we scale: sixty, three hundred, a thousand patients.",
+    "How will we prove it? With a clinical pilot we're proposing with Gregorio Marañón: sixty patients for six months, against a matched control group with usual care. We'll measure four things. Fewer emergency admissions, against the control group. Savings: we measure the cost per patient we avoid — stays, emergencies, visits, care. Parkinson’s costs over fourteen thousand euros per patient a year; VoxWave pays off above three point four percent. Better triage — our primary indicator: the time from a sustained change to a neurologist's review: about three weeks, from three to six months today. And better lives, measured with the PDQ-8 quality-of-life scale. Then we scale: sixty, three hundred, a thousand patients.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

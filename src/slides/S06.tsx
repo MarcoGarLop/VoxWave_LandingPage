@@ -108,7 +108,7 @@ const STAMPS = [
   {
     logo: <img src="/media/partners/fep_color.png" alt="" style={{ height: 122, display: 'block' }} />,
     names: ['Cristina Ibarrola'],
-    tag: 'Spanish Parkinson’s Federation',
+    tag: 'Asociación Navarra de Parkinson',
     rot: 1.8,
   },
 ];
@@ -198,7 +198,7 @@ export const S06: SlideDef = {
   id: 'S06',
   builds: 1,
   notes:
-    'And this is not a hunch. A sustained “aah” recorded at home estimates the clinical score within two points of the neurologist. A study across five languages showed speech flags Parkinson’s and tracks it. Ordinary phone calls are enough. And patients keep up with daily tests. We build it with Dr. Gustavo Arrieta and Dr. Andrés Pastor at Gregorio Marañón, one of Spain’s largest hospitals, and with Cristina Ibarrola at the Spanish Parkinson’s Federation.',
+    'And this is not a hunch. A sustained “aah” recorded at home estimates the clinical score within two points of the neurologist. A study across five languages showed speech flags Parkinson’s and tracks it. Ordinary phone calls are enough. And patients keep up with daily tests. We build it with Dr. Gustavo Arrieta and Dr. Andrés Pastor at Gregorio Marañón, one of Spain’s largest hospitals, and with Cristina Ibarrola at the Navarra Parkinson’s Association.',
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),
