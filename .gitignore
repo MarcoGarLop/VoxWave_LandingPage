@@ -1,0 +1,7 @@
+node_modules
+dist
+*.local
+.screens
+
+# Over GitHub's 100 MB file limit (kept locally)
+Resources/VoxWave-pitch-v7.mp4
