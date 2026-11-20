@@ -5,3 +5,6 @@ dist
 
 # Over GitHub's 100 MB file limit (kept locally)
 Resources/VoxWave-pitch-v7.mp4
+
+# Raw email screenshots contain third-party addresses and phone numbers (crops live in public/media/weekend)
+Resources/WhatsApp Image *

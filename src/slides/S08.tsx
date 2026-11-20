@@ -57,42 +57,48 @@ const CARDS_AT: [number, number][] = [
 ];
 const SIG = { x: 40, y: 92, w: 710, h: 96 }; // signal area inside a card
 
+// The interpretable "voice dials" of the VoxWave paper (Table 4), with their eGeMAPS definitions.
 const METRICS = [
   {
-    key: 'Tremor',
-    plain: 'How much the voice shakes',
-    value: 1.8,
-    fmt: (v: number) => `${v.toFixed(1)}%`,
-    tex: String.raw`\mathrm{Tremor}=\max\limits_{3\le f\le 12\,\mathrm{Hz}}\frac{\left|\,\mathcal{F}\{F_0(t)-\bar{F}_0\}(f)\,\right|}{\bar{F}_0}`,
-    size: 31,
+    key: 'Voice clarity',
+    plain: 'How clean the voice sounds',
+    value: 18.4,
+    fmt: (v: number) => `${v.toFixed(1)} dB`,
+    tex: String.raw`\mathrm{HNR}=10\log_{10}\frac{E_{\mathrm{harmonic}}}{E_{\mathrm{noise}}}`,
+    size: 32,
   },
   {
-    key: 'Pitch',
-    plain: 'The tone of the voice',
-    value: 186,
-    fmt: (v: number) => `${Math.round(v)} Hz`,
-    tex: String.raw`\mathrm{Pitch}=f_s\Big/\arg\max\limits_{\tau}\sum\limits_{n}x[n]\,x[n+\tau]`,
-    size: 31,
+    key: 'Pitch variation',
+    plain: 'How lively the intonation is',
+    value: 0.16,
+    fmt: (v: number) => v.toFixed(2),
+    tex: String.raw`\mathrm{Pitch\ variation}=\frac{\sigma\left(F_0^{\,\mathrm{st}}\right)}{\mu\left(F_0^{\,\mathrm{st}}\right)}`,
+    size: 32,
   },
   {
-    key: 'Rhythm',
-    plain: 'How regular the syllables are',
-    value: 48,
-    fmt: (v: number) => `${Math.round(v)}`,
-    tex: String.raw`\mathrm{Rhythm}=\frac{100}{m-1}\sum\limits_{k=1}^{m-1}\left|\frac{d_k-d_{k+1}}{\left(d_k+d_{k+1}\right)/2}\right|`,
-    size: 29,
+    key: 'Syllable rate',
+    plain: 'How fast she speaks',
+    value: 4.3,
+    fmt: (v: number) => `${v.toFixed(1)} /s`,
+    tex: String.raw`\mathrm{Syllable\ rate}=\frac{N_{\mathrm{loudness\ peaks}}}{T}`,
+    size: 32,
   },
   {
-    key: 'Pauses',
-    plain: 'How much of the time is silence',
-    value: 23,
-    fmt: (v: number) => `${Math.round(v)}%`,
-    tex: String.raw`\mathrm{Pauses}=\frac{1}{T}\int_{0}^{T}\mathbf{1}\!\left[\,E(t)<\theta\,\right]dt`,
+    key: 'Pause length',
+    plain: 'How long the silences last',
+    value: 0.35,
+    fmt: (v: number) => `${v.toFixed(2)} s`,
+    tex: String.raw`\mathrm{Pause}=\frac{1}{K}\sum\limits_{k=1}^{K}\ell_k^{\,\mathrm{unvoiced}}`,
     size: 32,
   },
 ];
 
-const Z_TEX = String.raw`z_{k,t}=\frac{x_{k,t}-\tilde{x}_k}{1.4826\cdot\mathrm{MAD}_k}`;
+// The model (paper, Eqs. 3, 4 and 11): remove the room, score the voice, alert on sustained drift.
+const MODEL = [
+  { label: 'Remove the room', tex: String.raw`\tilde{X}=X-C\hat{\beta}` },
+  { label: 'VoxWave voice index', tex: String.raw`\mathrm{index}=100\,\sigma\!\left(w^{\top}z+b\right)` },
+  { label: 'Alert on her own baseline', tex: String.raw`z_w=\frac{V_w-m}{s}\geq 1.5\ \text{for 3 weeks}` },
+];
 
 // ---------- Helpers ----------
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -322,7 +328,7 @@ function AINode({ t }: { t: number }) {
 
 function Content() {
   const t = useElapsed();
-  const status = t < TL.split ? 'Listening' : t < TL.z ? 'Extracting biomarkers' : 'Comparing with her baseline';
+  const status = t < TL.split ? 'Listening' : t < TL.z ? 'Reading the voice dials' : 'The VoxWave model';
   const showWave = t < TL.fly1 + 0.1;
   return (
     <div className="content">
@@ -360,18 +366,24 @@ function Content() {
       ))}
       <AINode t={t} />
 
-      {/* Then: each number against María's own baseline. */}
+      {/* Then: the model itself, in three steps. */}
       {t >= TL.z && (
-        <div style={{ position: 'absolute', left: 0, right: 0, top: 905, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 34 }}>
-          <motion.div className="display" style={{ fontSize: 34, fontWeight: 600, color: NAVY }} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease }}>
-            …each one against <span style={{ color: CORAL }}>her own</span> baseline:
-          </motion.div>
-          <DrawnFormula tex={Z_TEX} size={34} delay={0.4} duration={1.6} color={NAVY} />
+        <div style={{ position: 'absolute', left: 120, top: 892, width: 1680, display: 'grid', gridTemplateColumns: '1fr 1fr 1.25fr', gap: 40 }}>
+          {MODEL.map((m, i) => (
+            <motion.div key={m.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease, delay: i * 0.55 }}>
+              <div className="mono" style={{ fontSize: 15, color: CORAL }}>
+                0{i + 1} · {m.label}
+              </div>
+              <div style={{ height: 70, display: 'flex', alignItems: 'center' }}>
+                <DrawnFormula tex={m.tex} size={30} delay={0.3 + i * 0.55} duration={1.3} color={NAVY} />
+              </div>
+            </motion.div>
+          ))}
         </div>
       )}
 
       <div className="mono" style={{ position: 'absolute', left: 120, bottom: 34, fontSize: 13, color: 'rgba(9,38,52,0.45)' }}>
-        Illustrative values · in today’s prototype the scoring is simulated
+        VoxWave model · WavLM + channel correction · AUROC 0.91 in Spanish, 0.79 in English never seen · preprint, Nov 2026 · values illustrative
       </div>
     </div>
   );
@@ -381,7 +393,7 @@ export const S08: SlideDef = {
   id: 'S08',
   builds: 1,
   notes:
-    'We turn a voice into numbers. Our AI listens to every session and breaks the voice down into four biomarkers the literature validates: tremor, the 3-to-12-hertz shake in the pitch; pitch itself, by autocorrelation; rhythm, how regular the syllables are; and pauses, how much of the time is silence. Then each one is compared only with María’s own baseline — not with anyone else. In today’s prototype the scoring is simulated: this is the pipeline we will validate on clinical data.',
+    'This is powered by the VoxWave voice model. It listens to every session and reads four voice dials from our paper: voice clarity, pitch variation, syllable rate and pause length. Behind them, three steps. First we remove the room: in public datasets, silence alone predicted Parkinson’s, so we subtract the microphone and the room from every recording. Then a self-supervised speech model produces the VoxWave voice index: AUROC 0.91 in Spanish, and 0.79 in English it was never trained on. Finally, we compare María only with her own baseline, and alert only on a drift sustained for three weeks.',
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),
