@@ -1,4 +1,4 @@
-import { geoCentroid, geoEquirectangular, geoMercator, geoPath } from 'd3-geo';
+import { geoAlbers, geoCentroid, geoEquirectangular, geoMercator, geoPath, type GeoProjection } from 'd3-geo';
 import { feature } from 'topojson-client';
 import type { Feature, FeatureCollection, Geometry, MultiPolygon } from 'geojson';
 import countries from 'world-atlas/countries-50m.json';
@@ -182,4 +182,53 @@ export function spainDots(box: [[number, number], [number, number]] = [[1000, 15
     return { x, y, lat, lon, vx, vy, vz };
   });
   return spainCache;
+}
+
+/**
+ * A flat dot-matrix map of one country (only the polygons `keep` accepts), fitted
+ * into a box in design px. Returns the dots and the projection, to place pins.
+ */
+export function countryDots(
+  iso: string,
+  box: [[number, number], [number, number]],
+  spacing: number,
+  keep: (lon: number, lat: number) => boolean,
+  kind: 'mercator' | 'albers' = 'mercator',
+): { dots: [number, number][]; project: (lon: number, lat: number) => [number, number] } {
+  const topo = countries as unknown as Parameters<typeof feature>[0];
+  const fc = feature(topo, (topo as any).objects.countries) as unknown as FeatureCollection<Geometry>;
+  const f = fc.features.find((x) => String(x.id) === iso)!;
+  const geom = f.geometry as MultiPolygon;
+  const polys = geom.type === 'MultiPolygon' ? geom.coordinates : [(f.geometry as any).coordinates];
+  const shape: Feature<MultiPolygon> = {
+    type: 'Feature',
+    properties: {},
+    geometry: {
+      type: 'MultiPolygon',
+      coordinates: polys.filter((p: any) => {
+        const [lon, lat] = geoCentroid({ type: 'Polygon', coordinates: p } as never);
+        return keep(lon, lat);
+      }),
+    },
+  };
+  const proj: GeoProjection = (kind === 'albers' ? geoAlbers() : geoMercator()).fitExtent(box, shape);
+  const [[x0, y0], [x1, y1]] = box;
+  const W = Math.ceil(x1) + 2, H = Math.ceil(y1) + 2;
+  const cv = document.createElement('canvas');
+  cv.width = W;
+  cv.height = H;
+  const g = cv.getContext('2d', { willReadFrequently: true })!;
+  g.fillStyle = '#fff';
+  g.beginPath();
+  geoPath(proj, g)(shape);
+  g.fill();
+  const px = g.getImageData(0, 0, W, H).data;
+  const dots: [number, number][] = [];
+  const rowH = spacing * 0.866;
+  for (let r = 0, y = y0; y <= y1; r++, y += rowH)
+    for (let x = x0 + (r % 2 ? spacing / 2 : 0); x <= x1; x += spacing) {
+      const u = Math.round(x), v = Math.round(y);
+      if (px[(v * W + u) * 4] > 127) dots.push([x, y]);
+    }
+  return { dots, project: (lon, lat) => proj([lon, lat]) as [number, number] };
 }

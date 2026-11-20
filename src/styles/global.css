@@ -281,7 +281,7 @@ body,
 .tone-black {
   background: #000;
   opacity: 0;
-  transition: opacity 1.4s cubic-bezier(.65,0,.35,1);
+  transition: opacity 1s cubic-bezier(.65,0,.35,1);
 }
 .tone-black[data-on='true'] { opacity: 1; }
 
@@ -297,3 +297,17 @@ body,
 .vignette { transition: opacity 1.2s ease; }
 .theme-light .vignette { opacity: 0; }
 .theme-light .grain { opacity: 0.5; }
+
+/* Line icons that trace themselves (set pathLength="1" on each path). */
+@keyframes draw-in {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+.draw-in path,
+.draw-in rect,
+.draw-in circle {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw-in 0.9s cubic-bezier(.65,0,.35,1) forwards;
+  animation-delay: inherit;
+}

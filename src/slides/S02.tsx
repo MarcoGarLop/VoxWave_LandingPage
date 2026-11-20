@@ -28,7 +28,6 @@ let map: MapDot[] = [];
 let hash: Float32Array;
 let order: Float32Array;
 const spain = new Set(ISO.spain);
-const europe = new Set(ISO.europe);
 function data() {
   if (map.length) return;
   dots = globeDots();
@@ -73,7 +72,7 @@ function view(x: number, y: number, z: number, t: number, out: number[]) {
   out[2] = y * sp + z1 * cp;
 }
 
-type Phase = 'spain' | 'world' | 'future' | 'europe';
+type Phase = 'spain' | 'world' | 'future' | 'cost';
 
 function target(phase: Phase, t0: number): ParticleTarget {
   const v = [0, 0, 0];
@@ -97,14 +96,14 @@ function target(phase: Phase, t0: number): ParticleTarget {
         else {
           const today = hash[i] < LIT_TODAY;
           const future = phase !== 'world' && hash[i] < LIT_TODAY + (1 - LIT_TODAY) * (phase === 'future' ? ignite : 1);
-          // Europe takes the light; the rest of the world steps back.
-          const back = phase === 'europe' ? 1 - 0.55 * clamp((k - 0.2) / 1.4) : 1;
-          if (phase === 'europe' && europe.has(d.iso)) {
-            const on = clamp((k - 0.2 - (d.lon + 10) * 0.012) / 0.8);
-            const pulse = 0.88 + 0.12 * Math.sin(t * 2.4 - d.lon * 0.08);
-            (c = col.coral), (a = Math.max(0.55, lit) * pulse * (0.4 + 0.6 * on) + lit * (1 - on) * 0.4), (s = 1.15 + 0.35 * on);
-          } else if (today) (c = col.paper), (a = lit * back), (s = 1.15);
-          else if (future) (c = col.hot), (a = lit * back), (s = 1.15);
+          // The cost: the whole planet catches fire, spreading out from Spain.
+          if (phase === 'cost') {
+            const on = clamp((k - 0.1 - (order[i] - 0.25) * 2.2) / 0.6);
+            const pulse = 0.86 + 0.14 * Math.sin(t * 2.2 - order[i] * 18);
+            const glow = Math.max(0.62, lit) * facing;
+            (c = on > 0.5 ? col.coral : col.paper), (a = glow * pulse * (0.45 + 0.55 * on)), (s = 1.15 + 0.3 * on);
+          } else if (today) (c = col.paper), (a = lit), (s = 1.15);
+          else if (future) (c = col.hot), (a = lit), (s = 1.15);
           else (c = col.paper), (a = 0.13 * lit), (s = 0.95);
         }
       } else {
@@ -138,7 +137,7 @@ function target(phase: Phase, t0: number): ParticleTarget {
   };
 }
 
-const PHASES: Phase[] = ['spain', 'world', 'future', 'europe'];
+const PHASES: Phase[] = ['spain', 'world', 'future', 'cost'];
 
 function particles(b: number) {
   data();
@@ -163,7 +162,7 @@ const FACTS = [
   { label: 'Spain', to: 200000, fmt: (v: number) => `${(Math.round(v / 1000) * 1000).toLocaleString('en-US')}+`, body: 'people living with Parkinson’s', src: 'SEN 2026' },
   { label: 'World, today', to: 11.8, fmt: (v: number) => `${v.toFixed(1)}M`, body: 'people with Parkinson’s', src: 'GBD 2021' },
   { label: 'World, 2050', to: 25.2, fmt: (v: number) => `${v.toFixed(1)}M`, body: 'the fastest-growing neurological disease', src: 'BMJ 2025' },
-  { label: 'Europe', to: 28.8, fmt: (v: number) => `€${v.toFixed(1)}B`, body: 'a year, the cost of Parkinson’s', src: 'EAN · Movement Disorders 2026' },
+  { label: 'The cost', to: 115, fmt: (v: number) => `$${Math.round(v)}B+`, body: 'a year, in the US and Europe alone', src: 'MJFF 2024 · EAN 2026' },
 ];
 
 function Fact({ i, latest }: { i: number; latest: boolean }) {
@@ -211,7 +210,7 @@ export const S02: SlideDef = {
   builds: 4,
   auto: [4.6, 4.4, 4.4],
   notes:
-    'María is one of more than two hundred thousand people with Parkinson’s in Spain. Worldwide, almost twelve million. By 2050, twenty-five million: it is the fastest-growing neurological disease. And in Europe alone it already costs almost twenty-nine billion euros a year.',
+    'María is one of more than two hundred thousand people with Parkinson’s in Spain. Worldwide, almost twelve million. By 2050, twenty-five million: it is the fastest-growing neurological disease. And it already costs more than a hundred and fifteen billion dollars a year — in the US and Europe alone.',
   // The voice breaks into the points of light that draw Spain.
   wave: () => ({ shape: wave({ y: 702, amp: 52 }), opacity: 0, duration: 1600, stagger: 0 }),
   particles,

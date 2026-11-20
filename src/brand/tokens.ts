@@ -23,9 +23,9 @@ export const EASE = [0.22, 1, 0.36, 1] as const;
 
 /** Timings (ms). Deliberately unhurried: the jury must see every move. */
 export const T = {
-  wordStagger: 55,
-  textIn: 780,
-  textOut: 380,
+  wordStagger: 45,
+  textIn: 680,
+  textOut: 320,
   morph: 2200,
   slideGap: 350,
 } as const;

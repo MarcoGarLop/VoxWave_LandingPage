@@ -91,7 +91,9 @@ export function Marker({
   labelSide = 'below',
   delay = 0,
   color = 'rgba(241,237,228,0.45)',
+  size = 16,
 }: {
+  size?: number;
   x: number;
   y: number;
   height?: number;
@@ -120,7 +122,7 @@ export function Marker({
           position: 'absolute',
           left: 0,
           whiteSpace: 'nowrap',
-          fontSize: 16,
+          fontSize: size,
           [labelSide === 'below' ? 'top' : 'bottom']: height + 16,
         }}
         initial={{ opacity: 0, x: '-50%', y: labelSide === 'below' ? -6 : 6 }}
@@ -155,6 +157,9 @@ export function Counter({
   style?: CSSProperties;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
+  // The formatter may be a fresh closure on every render: never restart the count for it.
+  const fmt = useRef(format);
+  fmt.current = format;
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -162,12 +167,12 @@ export function Counter({
     const t0 = performance.now() + delay * 1000;
     const tick = (now: number) => {
       const p = Math.min(1, Math.max(0, (now - t0) / (duration * 1000)));
-      el.textContent = format(from + (to - from) * easeOutCurve(p));
+      el.textContent = fmt.current(from + (to - from) * easeOutCurve(p));
       if (p < 1) raf = requestAnimationFrame(tick);
     };
-    el.textContent = format(from);
+    el.textContent = fmt.current(from);
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [to, from, duration, delay, format]);
+  }, [to, from, duration, delay]);
   return <span ref={ref} className={className} style={style} />;
 }

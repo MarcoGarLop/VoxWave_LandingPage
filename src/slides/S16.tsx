@@ -1,106 +1,173 @@
-import * as THREE from 'three';
 import { motion } from 'motion/react';
+import { useEffect, useRef, useState } from 'react';
 import { C, EASE } from '../brand/tokens';
+import { useAdvance, useEngine } from '../deck/engineContext';
 import type { SlideDef } from '../deck/types';
-import { clock } from '../engine/Engine';
-import { ISO, MADRID, globeDots, latLonToVec } from '../engine/geo';
-import { globeTarget, type DotLook } from '../engine/globe';
-import { clamp, easeInOut } from '../engine/math';
-import { put } from '../engine/paint';
 import { wave } from '../engine/shapes';
-import { At, Counter, Fade } from '../ui/motion';
+import { media } from '../media/preload';
+import { At, Words } from '../ui/motion';
 
 const ease = EASE as unknown as [number, number, number, number];
 
-const GLOBE = { cx: 1340, cy: 500, r: 340 };
-const cam = { lon: MADRID.lon, lat: 32 };
-function aim(toLon: number, toLat: number, dur = 3.6, drift = 0) {
-  const fromLon = cam.lon, fromLat = cam.lat, t0 = clock.t;
-  return {
-    lon: (t: number) => (cam.lon = fromLon + (toLon - fromLon) * easeInOut(clamp((t - t0) / dur)) + drift * Math.max(0, t - t0 - dur * 0.5)),
-    lat: (t: number) => (cam.lat = fromLat + (toLat - fromLat) * easeInOut(clamp((t - t0) / dur))),
-  };
-}
+/**
+ * Growth & barriers — a change of style: night, space, the Earth (Kling).
+ * Build 0: the coral light spreads from Madrid, across the Atlantic, over the
+ * Americas and the world; the market numbers land in sync with the image.
+ * Build 1: the last frame stays, dimmed, and the three barriers appear with how we
+ * clear each one — and why, once cleared, they protect us.
+ */
 
-let fromMadrid: Float32Array | null = null;
-function order() {
-  if (fromMadrid) return fromMadrid;
-  const dots = globeDots();
-  const m = latLonToVec(MADRID.lat, MADRID.lon);
-  fromMadrid = new Float32Array(dots.length);
-  dots.forEach((d, i) => (fromMadrid![i] = Math.acos(Math.max(-1, Math.min(1, d.x * m[0] + d.y * m[1] + d.z * m[2]))) / Math.PI));
-  return fromMadrid;
-}
+const CORAL = C.coral;
+const PAPER = C.paper;
+const CLIP = '/media/world/world.mp4';
 
-const paper = new THREE.Color(C.paper);
-const coral = new THREE.Color(C.coral);
-const look: DotLook = { color: paper, alpha: 1, size: 1 };
-const set = (c: THREE.Color, a: number, s: number) => ((look.color = c), (look.alpha = a), (look.size = s), look);
-const spain = new Set(ISO.spain);
-const spanish = new Set([...ISO.spain, ...ISO.latam]);
-const usa = new Set(ISO.usa);
+// When each market number lands (clip seconds).
+const MARKETS = [
+  { at: 0.8, label: 'Spain', big: '200,000+', small: 'patients · where we start' },
+  { at: 6.6, label: 'US Hispanic community', big: '68M', small: 'people · highest Parkinson’s incidence' },
+  { at: 8.0, label: 'Spanish-speaking world', big: '≈ 2.3M', small: 'patients · ≈ €1.1B a year' },
+  { at: 9.3, label: 'The world', big: '11.8M', small: 'patients · every language says “aah”' },
+];
+const HOLD_AFTER = 2.2; // seconds on the last frame before the barriers
 
-function particles(b: number) {
-  const dots = globeDots();
-  const base = { cx: GLOBE.cx, cy: GLOBE.cy, r: GLOBE.r };
-  if (b === 0) {
-    cam.lon = MADRID.lon - 25;
-    cam.lat = 22;
-    return {
-      seed: 'wave' as const,
-      state: {
-        duration: 4200,
-        scatter: 0.6,
-        size: 3,
-        target: globeTarget(dots, { ...base, ...aim(MADRID.lon, 34, 5, 0.4), look: (d) => (spain.has(d.iso) ? set(coral, 1, 2) : set(paper, 0.32, 1)) }),
-      },
+const BARRIERS = [
+  {
+    k: 'Regulation',
+    a: 'CE mark in year 2, FDA in year 3 — built in from day one.',
+    icon: (
+      <>
+        <path d="M24 5 L40 11 V24 C40 33 33 40 24 43 C15 40 8 33 8 24 V11 Z" pathLength={1} />
+        <path d="M17 24 L22 29 L31 19" pathLength={1} />
+      </>
+    ),
+  },
+  {
+    k: 'Reimbursement, country by country',
+    a: 'Private clinics pay directly first; public systems and insurers follow the evidence.',
+    icon: (
+      <>
+        <rect x={6} y={12} width={36} height={24} rx={4} pathLength={1} />
+        <circle cx={24} cy={24} r={5} pathLength={1} />
+      </>
+    ),
+  },
+  {
+    k: 'Every variety of Spanish',
+    a: 'We validate with real clinical voices, starting at Gregorio Marañón.',
+    icon: (
+      <>
+        <path d="M4 20 C10 10 16 30 24 20 S38 10 44 20" pathLength={1} />
+        <path d="M4 30 C10 20 16 40 24 30 S38 20 44 30" pathLength={1} />
+      </>
+    ),
+  },
+];
+
+/** Keeps the WebGL engine asleep while the fullscreen clip covers it. */
+function useSuspend() {
+  const eng = useEngine();
+  useEffect(() => {
+    const e = eng?.current;
+    if (!e) return;
+    e.suspended = true;
+    return () => {
+      e.suspended = false;
     };
-  }
-  if (b === 1) {
-    return {
-      state: {
-        duration: 3400,
-        scatter: 0.8,
-        order: order(),
-        size: 3,
-        target: globeTarget(dots, {
-          ...base,
-          ...aim(-48, 16, 4.2, 0.6),
-          // the Spanish-speaking world; the US Hispanic community glows softer
-          look: (d) => (spanish.has(d.iso) ? set(coral, 1, 1.6) : usa.has(d.iso) ? set(coral, 0.55, 1.2) : set(paper, 0.28, 1)),
-        }),
-      },
-    };
-  }
-  return {
-    state: {
-      duration: 3400,
-      scatter: 0.85,
-      order: order(),
-      size: 3,
-      target: globeTarget(dots, { ...base, ...aim(-20, 18, 4, 1.6), look: (d) => (spanish.has(d.iso) ? set(coral, 1, 1.5) : set(paper, 0.9, 1.05)) }),
-    },
-  };
+  }, [eng]);
 }
 
-function Row({ top, label, dim, value, body }: { top: number; label: string; dim: boolean; value: React.ReactNode; body: string }) {
+function World({ build }: { build: number }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const [src] = useState(() => media(CLIP));
+  const [time, setTime] = useState(0);
+  const [ended, setEnded] = useState(false);
+  const advance = useAdvance();
+  useSuspend();
+  useEffect(() => {
+    const v = ref.current;
+    if (!v) return;
+    v.currentTime = 0;
+    v.play().catch(() => {});
+  }, []);
+  useEffect(() => {
+    if (!ended || build !== 0) return;
+    const id = window.setTimeout(advance, HOLD_AFTER * 1000);
+    return () => window.clearTimeout(id);
+  }, [ended, build, advance]);
+  const dim = build >= 1;
   return (
-    <div className="text-col" style={{ top }}>
-      <Fade dim={dim} delay={0.2}>
-        <div className="mono" style={{ fontSize: 15 }}>
-          {label}
-        </div>
-      </Fade>
-      <Fade dim={dim} delay={0.35} y={20}>
-        <div className="number" style={{ fontSize: 100, marginTop: 6 }}>
-          {value}
-        </div>
-      </Fade>
-      <Fade dim={dim} delay={0.7}>
-        <p className="body" style={{ fontSize: 24, marginTop: 6 }}>
-          {body}
-        </p>
-      </Fade>
+    <>
+      <video
+        ref={ref}
+        src={src}
+        muted
+        playsInline
+        preload="auto"
+        onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
+        onEnded={() => setEnded(true)}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+      />
+      {/* Left shade so the numbers read; deepens for the barriers. */}
+      <motion.div
+        style={{ position: 'absolute', inset: 0 }}
+        animate={{
+          background: dim
+            ? 'linear-gradient(90deg, rgba(4,20,28,0.94) 0%, rgba(4,20,28,0.86) 55%, rgba(4,20,28,0.7) 100%)'
+            : 'linear-gradient(0deg, rgba(4,20,28,0.9) 0%, rgba(4,20,28,0.55) 20%, rgba(4,20,28,0) 42%)',
+        }}
+        transition={{ duration: 1.2, ease }}
+      />
+      {/* The markets, stacked, none ever leaves */}
+      <motion.div style={{ position: 'absolute', left: 120, right: 120, top: 852, display: 'flex', gap: 40 }} animate={{ opacity: dim ? 0 : 1, y: dim ? 20 : 0 }} transition={{ duration: 0.8, ease }}>
+        {MARKETS.map((m, i) => {
+          const on = time >= m.at || ended;
+          const latest = on && (i === MARKETS.length - 1 || time < MARKETS[i + 1].at) && !ended;
+          return (
+            <motion.div key={m.label} style={{ flex: 1 }} initial={{ opacity: 0, y: 16 }} animate={{ opacity: on ? 1 : 0, y: on ? 0 : 16 }} transition={{ duration: 0.8, ease }}>
+              <div className="mono" style={{ fontSize: 15, color: latest ? CORAL : 'rgba(241,237,228,0.6)' }}>
+                {m.label}
+              </div>
+              <div className="number" style={{ fontSize: 64, lineHeight: 1, marginTop: 6, color: latest || i === MARKETS.length - 1 ? CORAL : PAPER }}>
+                {m.big}
+              </div>
+              <div className="body" style={{ fontSize: 19, marginTop: 8, color: 'rgba(241,237,228,0.75)' }}>
+                {m.small}
+              </div>
+            </motion.div>
+          );
+        })}
+      </motion.div>
+    </>
+  );
+}
+
+function Barriers() {
+  return (
+    <div style={{ position: 'absolute', left: 120, top: 210, width: 1680 }}>
+      <div className="mono" style={{ fontSize: 17, color: CORAL }}>
+        Growth · the barriers
+      </div>
+      <h2 className="display" style={{ fontSize: 66, marginTop: 14, color: PAPER }}>
+        <Words text="What stands in the way." delay={0.2} />
+      </h2>
+      <div style={{ display: 'flex', gap: 60, marginTop: 70 }}>
+        {BARRIERS.map((b, i) => (
+          <motion.div key={b.k} style={{ flex: 1, paddingTop: 26, borderTop: '2px solid rgba(255,110,66,0.6)' }} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease, delay: 0.8 + i * 0.35 }}>
+            <svg className="draw-in" width={60} height={60} viewBox="0 0 48 48" fill="none" stroke={CORAL} strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible', animationDelay: `${0.9 + i * 0.35}s` }}>
+              {b.icon}
+            </svg>
+            <div className="display" style={{ fontSize: 32, fontWeight: 700, color: PAPER, marginTop: 18, lineHeight: 1.15 }}>
+              {b.k}
+            </div>
+            <div className="body" style={{ fontSize: 24, color: 'rgba(241,237,228,0.78)', marginTop: 12, lineHeight: 1.4 }}>
+              → {b.a}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+      <motion.div className="display" style={{ fontSize: 46, fontWeight: 700, color: CORAL, marginTop: 80 }} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, ease, delay: 2.6 }}>
+        Once we clear them, they protect us.
+      </motion.div>
     </div>
   );
 }
@@ -108,38 +175,18 @@ function Row({ top, label, dim, value, body }: { top: number; label: string; dim
 function Content({ build }: { build: number }) {
   return (
     <div className="content">
-      <Fade delay={0.2} style={{ position: 'absolute', left: 120, top: 100 }}>
-        <div className="mono" style={{ fontSize: 15, color: 'var(--coral)' }}>
-          Growth & barriers
-        </div>
-      </Fade>
-      <At build={build} at={0}>
-        <Row key="som" top={160} label="SOM · Spain, year 3" dim={build >= 1} value={<Counter to={1000} duration={2} delay={0.8} format={(v) => Math.round(v).toLocaleString('en-US')} />} body="patients · ≈ €480k revenue a year · starting in Madrid" />
+      <World build={build} />
+      <div className="mono" style={{ position: 'absolute', left: 120, top: 62, fontSize: 18, color: PAPER, display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{ width: 10, height: 10, borderRadius: 5, background: CORAL, display: 'inline-block' }} />
+        Growth
+      </div>
+      <At build={build} at={0} until={1}>
+        <motion.h2 key="where" className="display" style={{ position: 'absolute', left: 120, top: 104, fontSize: 60, color: PAPER }} exit={{ opacity: 0 }}>
+          <Words text="Where we grow." delay={0.4} />
+        </motion.h2>
       </At>
       <At build={build} at={1}>
-        <Row key="sam" top={410} label="SAM · the Spanish-speaking world" dim={build >= 2} value={<><Counter to={2.3} duration={2} delay={0.8} format={(v) => v.toFixed(1)} />M</>} body="patients · ≈ €1.1B a year · one Spanish model reaches 20+ countries" />
-      </At>
-      <At build={build} at={2}>
-        <Row key="tam" top={660} label="TAM · the world" dim={false} value={<><Counter to={11.8} duration={2} delay={0.8} format={(v) => v.toFixed(1)} />M</>} body="patients today, 25.2M by 2050 · ≈ €5.7B a year · an “aah” sounds the same in every language" />
-      </At>
-
-      <At build={build} at={1}>
-        <motion.div
-          key="us"
-          className="glass glass-lite"
-          style={{ position: 'absolute', left: 1330, top: 870, width: 470, padding: '18px 24px' }}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.9, ease, delay: 2.2 }}
-        >
-          <div className="mono" style={{ fontSize: 12, color: 'var(--coral)' }}>
-            The US Hispanic community
-          </div>
-          <div className="body" style={{ fontSize: 17, lineHeight: 1.45, marginTop: 8, color: 'var(--ink-70)' }}>
-            Highest Parkinson’s incidence (16.6 vs 13.6 per 100k) · ≈ 5% reach a movement-disorder specialist (≈ 10% of white patients) · 40% of Medicare patients saw no neurologist in 2019
-          </div>
-        </motion.div>
+        <Barriers key="barriers" />
       </At>
     </div>
   );
@@ -147,20 +194,13 @@ function Content({ build }: { build: number }) {
 
 export const S16: SlideDef = {
   id: 'S16',
-  builds: 3,
-  auto: [7, 7],
+  builds: 2,
+  // The clip drives the first build; it advances itself when it ends.
+  auto: [Infinity],
   notes:
-    "Growth. Our first market is Spain. Our serviceable market is the Spanish-speaking world: over two million patients, a billion-euro market a year, including the US Hispanic community, which has the highest incidence of Parkinson's in the US and half the access to specialists. And our horizon is the whole world: twelve million patients.",
-  wave: () => ({
-    shape: wave({ y: 702, amp: 40 }),
-    paint: (out, n) => {
-      for (let i = 0; i < n; i++) put(out, i, C.coral, 1);
-    },
-    opacity: 0,
-    duration: 1600,
-    stagger: 0,
-  }),
-  particles,
-  bg: (b) => ({ pool: [0.7, 0.47], poolStrength: b === 2 ? 1.15 : 1.05, warm: 0.4 }),
+    "Where we grow. We start in Spain: more than two hundred thousand patients. Then we cross the Atlantic to the US Hispanic community: sixty-eight million people, with the highest Parkinson's incidence. Together, the Spanish-speaking world is about two point three million patients — over a billion euros a year. And beyond that, the world: twelve million, because an “aah” sounds the same in every language. What stands in the way? Regulation: CE mark in year two, FDA in year three. Reimbursement, country by country: private clinics pay directly first. And every variety of Spanish: we validate with real clinical voices, starting at Gregorio Marañón. Once we clear them, they protect us.",
+  theme: () => 'black',
+  wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
+  bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),
   Content,
 };

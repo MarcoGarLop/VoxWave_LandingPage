@@ -32,7 +32,10 @@ export function DrawnFormula({
   delay = 0,
   duration = 2.4,
   color = 'var(--paper)',
+  still = false,
 }: {
+  /** Render already written (no tracing), e.g. text printed on a sheet. */
+  still?: boolean;
   tex: string;
   size?: number;
   delay?: number;
@@ -47,6 +50,13 @@ export function DrawnFormula({
     const root = ref.current;
     if (!root) return;
     const shapes = Array.from(root.querySelectorAll<SVGGeometryElement>('path, rect, line'));
+    if (still) {
+      shapes.forEach((el) => {
+        el.style.fill = 'currentColor';
+        el.style.stroke = 'none';
+      });
+      return;
+    }
     // Order glyphs left to right, the way a hand writes.
     const xs = shapes.map((el) => {
       try {
@@ -83,7 +93,7 @@ export function DrawnFormula({
       );
     });
     return () => timers.forEach((t) => window.clearTimeout(t));
-  }, [html, delay, duration]);
+  }, [html, delay, duration, still]);
 
   return (
     <div

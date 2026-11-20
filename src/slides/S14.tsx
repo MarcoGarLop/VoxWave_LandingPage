@@ -1,126 +1,277 @@
 import { motion } from 'motion/react';
+import { useEffect, useState } from 'react';
 import { C, EASE } from '../brand/tokens';
 import type { SlideDef } from '../deck/types';
-import { put } from '../engine/paint';
-import { path } from '../engine/shapes';
-import { At, Fade, Words } from '../ui/motion';
+import { wave } from '../engine/shapes';
+import { Words } from '../ui/motion';
 
 const ease = EASE as unknown as [number, number, number, number];
 
-// Cumulative contribution (k€) vs patients: −115k one-off/fixed, +380 €/patient-year.
-const PX0 = 980, PX1 = 1790, P_MAX = 1000;
-const Y0 = 560, K = 1.25; // px per k€
-const px = (p: number) => PX0 + (p / P_MAX) * (PX1 - PX0);
-const py = (k: number) => Y0 - k * K;
-const BREAK = 115000 / 380; // ≈ 303
+/**
+ * Costs, on paper.
+ * Left: a receipt prints line by line — the ESP32 device and the yearly cost per
+ * patient, medical regulation included — and gets stamped with the gross margin
+ * (≈ 70%, between Omada and Hinge Health). Right: the first year, month by month:
+ * the up-front cost of a new patient is paid back on day 38; the rest is margin.
+ */
 
-function jCurve(): [number, number][] {
-  const pts: [number, number][] = [];
-  // drop: the one-off investment
-  for (let i = 0; i <= 10; i++) {
-    const f = i / 10;
-    pts.push([px(0) + f * f * 14, py(-115 * Math.sin((f * Math.PI) / 2))]);
-  }
-  // rounded bottom then the climb
-  for (let i = 1; i <= 60; i++) {
-    const p = (i / 60) * P_MAX;
-    const k = 0.38 * p - 115;
-    const soft = Math.exp(-p / 40) * 8; // round the corner
-    pts.push([px(p) + 14 * (1 - p / P_MAX), py(k - soft)]);
-  }
-  return pts;
+const NAVY = C.navy, TEAL = C.teal, CORAL = C.coral;
+const INK = 'rgba(9,38,52,0.72)';
+
+// ---------- Estimate (distributor prices, medical-grade, regulation included) ----------
+type Line = { k: 'head' | 'item' | 'total' | 'gap'; label?: string; value?: string };
+const RECEIPT: Line[] = [
+  { k: 'head', label: 'ONE-OFF · THE DEVICE' },
+  { k: 'item', label: 'ESP32-S3 chip', value: '€4.80' },
+  { k: 'item', label: '1.3″ OLED screen', value: '€3.50' },
+  { k: 'item', label: 'Medical-grade microphone', value: '€2.70' },
+  { k: 'item', label: 'Battery & charging', value: '€5.00' },
+  { k: 'item', label: 'Button', value: '€0.50' },
+  { k: 'item', label: 'Board, assembly & testing', value: '€12.50' },
+  { k: 'item', label: 'Case & packaging', value: '€10.00' },
+  { k: 'total', label: 'DEVICE', value: '€39.00' },
+  { k: 'gap' },
+  { k: 'head', label: 'EVERY YEAR · PER PATIENT' },
+  { k: 'item', label: 'Device (reused 3 years)', value: '€13' },
+  { k: 'item', label: 'Cloud & AI, hosted in the EU', value: '€12' },
+  { k: 'item', label: 'Clinical & patient support', value: '€36' },
+  { k: 'item', label: 'Logistics & refurbishing', value: '€18' },
+  { k: 'item', label: 'Regulation & quality (CE, ISO)', value: '€58' },
+  { k: 'item', label: 'Payments & admin', value: '€8' },
+  { k: 'total', label: 'TOTAL / YEAR', value: '€145' },
+];
+const UPFRONT = 50; // device + shipping & onboarding, per new patient
+const PER_DAY = 40 / 30; // €40 a month
+const PAYBACK_DAY = Math.ceil(UPFRONT / PER_DAY); // 38
+const MARGIN_YEAR = 480 - 145; // €335
+
+// ---------- Timeline (s since the slide appeared) ----------
+const T = { head: 0.15, print0: 0.7, lineGap: 0.18, stamp: 0, right: 0, days0: 0, dayGap: 0.045, monthGap: 0.11 };
+T.stamp = T.print0 + RECEIPT.length * T.lineGap + 0.3;
+T.right = T.stamp + 0.35;
+T.days0 = T.right + 0.6;
+const PAID_AT = T.days0 + PAYBACK_DAY * T.dayGap;
+
+// ---------- Geometry ----------
+const RC = { x: 150, w: 600, slot: 196, line: 31 };
+const YR = { x: 920, y: 560, cell: 132, h: 96, gap: 14, cols: 6 };
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+
+function useElapsed() {
+  const [t, setT] = useState(0);
+  useEffect(() => {
+    const t0 = performance.now();
+    let raf = 0;
+    const loop = () => {
+      setT((performance.now() - t0) / 1000);
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  return t;
 }
 
-function Content({ build }: { build: number }) {
+function Receipt({ t }: { t: number }) {
+  const printed = clamp((t - T.print0) / (RECEIPT.length * T.lineGap)) * RECEIPT.length;
+  const n = Math.floor(printed);
+  const paperH = 92 + printed * RC.line + (printed >= RECEIPT.length ? 30 : 0);
+  return (
+    <>
+      <div style={{ position: 'absolute', left: RC.x - 22, top: RC.slot - 14, width: RC.w + 44, height: 16, borderRadius: 8, background: NAVY }} />
+      <div
+        style={{
+          position: 'absolute',
+          left: RC.x,
+          top: RC.slot,
+          width: RC.w,
+          height: paperH,
+          background: '#fffefb',
+          boxShadow: '0 18px 40px rgba(9,38,52,0.12)',
+          overflow: 'hidden',
+          clipPath: `polygon(0 0, 100% 0, 100% calc(100% - 10px), ${Array.from({ length: 31 }, (_, i) => `${100 - (i + 0.5) * (100 / 30)}% ${i % 2 ? '100%' : 'calc(100% - 10px)'}`).join(', ')}, 0 calc(100% - 10px))`,
+        }}
+      >
+        <div className="mono" style={{ position: 'absolute', left: 30, right: 30, top: 22, fontSize: 15, color: NAVY, display: 'flex', justifyContent: 'space-between' }}>
+          <span>VOXWAVE · COST SHEET</span>
+          <span style={{ color: TEAL }}>ESP32 · MEDICAL GRADE</span>
+        </div>
+        <div style={{ position: 'absolute', left: 30, right: 30, top: 52, borderTop: '2px dashed rgba(9,38,52,0.25)' }} />
+        {RECEIPT.slice(0, n).map((l, i) => (
+          <motion.div
+            key={i}
+            className="mono"
+            style={{
+              position: 'absolute',
+              left: 30,
+              right: 30,
+              top: 70 + i * RC.line,
+              fontSize: l.k === 'head' ? 14 : 18,
+              color: l.k === 'head' ? CORAL : NAVY,
+              fontWeight: l.k === 'total' ? 700 : 400,
+              display: 'flex',
+              alignItems: 'baseline',
+              gap: 10,
+              letterSpacing: l.k === 'head' ? '0.18em' : '0.02em',
+              textTransform: l.k === 'head' ? 'uppercase' : 'none',
+              borderTop: l.k === 'total' ? '2px solid rgba(9,38,52,0.6)' : undefined,
+              paddingTop: l.k === 'total' ? 3 : 0,
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.15 }}
+          >
+            {l.label && <span style={{ whiteSpace: 'nowrap' }}>{l.label}</span>}
+            {l.value && (
+              <>
+                <span style={{ flex: 1, borderBottom: l.k === 'item' ? '2px dotted rgba(9,38,52,0.22)' : 'none', transform: 'translateY(-5px)' }} />
+                <span>{l.value}</span>
+              </>
+            )}
+          </motion.div>
+        ))}
+      </div>
+      {/* the margin, stamped on the torn edge */}
+      <div style={{ position: 'absolute', left: RC.x + RC.w - 150, top: RC.slot + 70 + RECEIPT.length * RC.line + 4 }}>
+        <motion.div
+          style={{ width: 230, height: 116, borderRadius: 16, border: `4px solid ${CORAL}`, color: CORAL, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,254,251,0.9)' }}
+          initial={{ opacity: 0, scale: 1.7, rotate: -18 }}
+          animate={{ opacity: [0, 1, 1, 1], scale: [1.7, 0.95, 1.03, 1], rotate: [-18, -6, -10, -9] }}
+          transition={{ duration: 0.65, delay: T.stamp, times: [0, 0.45, 0.72, 1], ease: [0.5, 0, 0.75, 0] }}
+        >
+          <div className="number" style={{ fontSize: 48, lineHeight: 1 }}>
+            ≈ 70%
+          </div>
+          <div className="mono" style={{ fontSize: 13, marginTop: 4 }}>
+            gross margin
+          </div>
+        </motion.div>
+      </div>
+    </>
+  );
+}
+
+function Payback({ t }: { t: number }) {
+  const day = Math.max(0, Math.min(PAYBACK_DAY, Math.floor((t - T.days0) / T.dayGap)));
+  const paid = t >= PAID_AT;
+  return (
+    <motion.div style={{ position: 'absolute', left: YR.x, top: 236 }} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease, delay: T.right }}>
+      <div className="mono" style={{ fontSize: 17, color: CORAL }}>
+        Each new patient pays back in
+      </div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 18, marginTop: 4 }}>
+        <span className="number" style={{ fontSize: 110, lineHeight: 1, color: paid ? CORAL : NAVY, transition: 'color .4s' }}>
+          {day}
+        </span>
+        <span className="display" style={{ fontSize: 40, fontWeight: 700, color: NAVY }}>
+          days
+        </span>
+      </div>
+      <div className="body" style={{ fontSize: 22, color: INK, marginTop: 8 }}>
+        €{UPFRONT} up front · €40 a month coming back
+      </div>
+    </motion.div>
+  );
+}
+
+/** The first year, month by month: navy while paying back, coral once it's margin. */
+function Year({ t }: { t: number }) {
+  const days = Math.max(0, Math.min(PAYBACK_DAY, (t - T.days0) / T.dayGap));
+  const paid = t >= PAID_AT;
+  return (
+    <>
+      {MONTHS.map((m, i) => {
+        const col = i % YR.cols, row = Math.floor(i / YR.cols);
+        const fillNavy = clamp((days - i * 30) / 30); // part of this month spent paying back
+        const coralAt = PAID_AT + Math.max(0, i - 1) * T.monthGap;
+        const coral = paid && t >= coralAt && i >= 1;
+        const isPay = i === 1; // day 38 falls in month 2
+        return (
+          <motion.div
+            key={m}
+            style={{
+              position: 'absolute',
+              left: YR.x + col * (YR.cell + YR.gap),
+              top: YR.y + row * (YR.h + YR.gap),
+              width: YR.cell,
+              height: YR.h,
+              borderRadius: 14,
+              overflow: 'hidden',
+              border: '2px solid rgba(9,38,52,0.10)',
+              background: coral ? (isPay ? CORAL : 'rgba(255,110,66,0.2)') : 'transparent',
+              transition: 'background .3s',
+              boxShadow: coral && isPay ? '0 14px 30px rgba(255,110,66,0.35)' : 'none',
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, scale: coral && isPay && t < coralAt + 0.6 ? [1, 1.12, 1] : 1 }}
+            transition={{ opacity: { duration: 0.4, delay: T.right + 0.3 + i * 0.03 }, scale: { duration: 0.5 } }}
+          >
+            {/* paying back: navy fill growing left to right */}
+            {!coral && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${fillNavy * 100}%`, background: NAVY }} />}
+            {isPay && coral && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${((PAYBACK_DAY - 30) / 30) * 100}%`, background: NAVY }} />}
+            <div
+              className="mono"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 19,
+                textTransform: 'none',
+                color: coral ? (isPay ? '#fff' : CORAL) : fillNavy > 0.5 ? '#fbf9f5' : 'rgba(9,38,52,0.4)',
+              }}
+            >
+              {coral && isPay ? '✓ day 38' : m}
+            </div>
+          </motion.div>
+        );
+      })}
+      {t >= PAID_AT + 11 * T.monthGap && (
+        <motion.div className="display" style={{ position: 'absolute', left: YR.x, top: YR.y + 2 * (YR.h + YR.gap) + 10, fontSize: 25, fontWeight: 600, color: CORAL }} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease }}>
+          Then it’s margin: ≈ €{MARGIN_YEAR} per patient, every year.
+        </motion.div>
+      )}
+    </>
+  );
+}
+
+function Content() {
+  const t = useElapsed();
+  const status = t < T.stamp ? 'Printing' : t < PAID_AT ? 'Paying back' : 'In profit';
   return (
     <div className="content">
-      <div className="text-col" style={{ top: 150, width: 720 }}>
-        <div className="mono" style={{ fontSize: 15, color: 'var(--coral)' }}>
-          Costs & operations
-        </div>
-        <h2 className="display d-88" style={{ marginTop: 18 }}>
-          <Words text="Pays back at ≈ 300 patients." delay={0.4} wordClass={(w) => (w === '300' ? 'coral' : undefined)} />
-        </h2>
-        <Fade delay={1.4} dim={build >= 1}>
-          <p className="body" style={{ marginTop: 22 }}>
-            That is 0.15% of people with Parkinson’s in Spain.
-          </p>
-        </Fade>
-        <At build={build} at={1}>
-          <div key="chips" style={{ marginTop: 40, display: 'flex', flexDirection: 'column', gap: 22 }}>
-            {[
-              ['≈ €100', 'cost per patient-year', 'cloud, processing, device loan, support, admin'],
-              ['≈ 80%', 'contribution margin', 'Hinge Health 77% · Omada 61%'],
-              ['€50–110k', 'CE marking, class IIa · once', 'plus ≈ €15k fixed costs in year one'],
-            ].map(([v, k, d], i) => (
-              <motion.div key={k} style={{ display: 'flex', alignItems: 'baseline', gap: 22 }} initial={{ opacity: 0, x: -14 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease, delay: 0.4 + i * 0.25 }}>
-                <span className="number" style={{ fontSize: 54, minWidth: 250, color: i === 1 ? 'var(--coral)' : 'var(--paper)' }}>
-                  {v}
-                </span>
-                <span>
-                  <span className="body" style={{ fontSize: 26, color: 'var(--paper)' }}>
-                    {k}
-                  </span>
-                  <span className="mono" style={{ display: 'block', fontSize: 12, marginTop: 4 }}>
-                    {d}
-                  </span>
-                </span>
-              </motion.div>
-            ))}
-          </div>
-        </At>
+      <div className="mono" style={{ position: 'absolute', left: 120, top: 62, fontSize: 18, color: NAVY, display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{ width: 10, height: 10, borderRadius: 5, background: CORAL, display: 'inline-block' }} />
+        Costs
       </div>
-
-      {/* axes */}
-      <motion.svg width={1920} height={1080} style={{ position: 'absolute', left: 0, top: 0 }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.2, delay: 0.6 }}>
-        <line x1={PX0 - 20} x2={PX1 + 20} y1={Y0} y2={Y0} stroke="rgba(241,237,228,0.3)" strokeDasharray="4 8" />
-        {[0, 250, 500, 750, 1000].map((p) => (
-          <text key={p} x={px(p)} y={Y0 + 214} fill="rgba(241,237,228,0.38)" fontFamily="JetBrains Mono" fontSize={14} textAnchor="middle" letterSpacing="2">
-            {p.toLocaleString('en-US')}
-          </text>
-        ))}
-        <text x={PX1} y={Y0 + 244} fill="rgba(241,237,228,0.38)" fontFamily="JetBrains Mono" fontSize={13} textAnchor="end" letterSpacing="2">
-          PATIENTS
-        </text>
-        <text x={px(0) + 24} y={py(-115) + 6} fill="rgba(241,237,228,0.5)" fontFamily="JetBrains Mono" fontSize={14} letterSpacing="1.5">
-          −€115k · CE marking + year-one fixed costs
-        </text>
-        <text x={px(1000) - 6} y={py(265) - 22} fill={C.coral} fontFamily="JetBrains Mono" fontSize={14} textAnchor="end" letterSpacing="1.5">
-          +€380 per patient-year
-        </text>
-      </motion.svg>
-      <motion.div style={{ position: 'absolute', left: px(BREAK), top: Y0, width: 0, height: 0 }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 3, duration: 0.8, ease }}>
-        <div style={{ position: 'absolute', left: -9, top: -9, width: 18, height: 18, borderRadius: 9, background: C.paper, boxShadow: `0 0 0 8px rgba(241,237,228,0.08), 0 0 28px ${C.coral}` }} />
-        <div className="mono" style={{ position: 'absolute', left: -2, top: -86, whiteSpace: 'nowrap', fontSize: 16, color: 'var(--paper)' }}>
-          Break-even
-        </div>
-        <div className="number" style={{ position: 'absolute', left: -2, top: -66, whiteSpace: 'nowrap', fontSize: 40 }}>
-          ≈ 300
-        </div>
+      <motion.div key={status} className="mono" style={{ position: 'absolute', right: 120, top: 62, fontSize: 18, color: status === 'In profit' ? CORAL : TEAL }} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        {status}
       </motion.div>
+      <h2 className="display" style={{ position: 'absolute', left: 120, top: 104, fontSize: 52, color: NAVY }}>
+        <Words text="What it costs us, and how fast it comes back." delay={T.head} />
+      </h2>
+
+      <Receipt t={t} />
+      <Payback t={t} />
+      <Year t={t} />
+
+      <div className="mono" style={{ position: 'absolute', right: 120, bottom: 34, fontSize: 13, color: 'rgba(9,38,52,0.45)' }}>
+        Estimate · gross margin peers: Omada ≈ 61% · Hinge Health ≈ 77% (2024)
+      </div>
     </div>
   );
 }
 
 export const S14: SlideDef = {
   id: 'S14',
-  builds: 2,
-  auto: [8],
+  builds: 1,
   notes:
-    'Costs. Each patient costs us about a hundred euros a year: an eighty percent contribution margin, in line with digital health companies like Hinge Health. The big one-off cost is CE marking: up to a hundred thousand euros. About three hundred patients pay it back: zero point one five percent of Spain.',
-  wave: () => ({
-    // The beam of the balance bends into the payback curve.
-    shape: path(jCurve(), 0.8),
-    paint: (out, n) => {
-      for (let i = 0; i < n; i++) put(out, i, C.coral, 1);
-    },
-    core: 1.7,
-    glow: 1,
-    echoes: 0.2,
-    duration: 3400,
-    stagger: 0.5,
-    dir: 1,
-  }),
-  bg: () => ({ pool: [0.7, 0.45], poolStrength: 1, warm: 0.6 }),
+    'What does it cost us? Built on an ESP32 with medical-grade parts, the device costs about thirty-nine euros. Per patient per year — the device reused for three years, EU-hosted cloud and AI, clinical and patient support, logistics, and medical regulation and quality — about one hundred and forty-five euros. Against four hundred and eighty a year, that is a gross margin around seventy percent: between Omada and Hinge Health. And each new patient pays back in thirty-eight days. Then it is margin: about three hundred and thirty-five euros per patient, every year.',
+  theme: () => 'light',
+  wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
+  bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),
   Content,
 };

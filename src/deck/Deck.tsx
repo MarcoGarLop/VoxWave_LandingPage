@@ -4,7 +4,6 @@ import { H, W } from '../brand/tokens';
 import { Engine } from '../engine/Engine';
 import { slides } from '../slides';
 import { AdvanceContext, EngineContext } from './engineContext';
-import { mic } from '../audio/mic';
 import { preload } from '../media/preload';
 
 /** Default seconds a build stays before the next plays by itself. */
@@ -40,6 +39,8 @@ export function Deck() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<Engine | null>(null);
   const [pos, setPos] = useState<Pos>(readHash);
+  const posRef = useRef(pos);
+  posRef.current = pos;
   const [blackout, setBlackout] = useState(false);
   const first = useRef(true);
   const prevPos = useRef<Pos>(pos);
@@ -116,6 +117,16 @@ export function Deck() {
   useEffect(() => {
     const onKey = (ev: KeyboardEvent) => {
       if (ev.repeat) return;
+      // Enter on a slide with a link (the live demo) opens it instead of advancing.
+      if (ev.key === 'Enter') {
+        const p = posRef.current;
+        const url = slides[p.i].link?.(p.b);
+        if (url) {
+          ev.preventDefault();
+          window.open(url, '_blank', 'noopener');
+          return;
+        }
+      }
       const k = ev.key;
       if (ev.shiftKey && (k === 'ArrowRight' || k === 'ArrowLeft')) {
         ev.preventDefault();
@@ -133,9 +144,6 @@ export function Deck() {
       } else if (k === 'f' || k === 'F') {
         if (document.fullscreenElement) document.exitFullscreen();
         else document.documentElement.requestFullscreen().catch(() => {});
-      } else if (k === 'm' || k === 'M') {
-        if (mic.active) mic.stop();
-        else mic.start();
       } else if (k === 'b' || k === 'B' || k === '.') {
         setBlackout((v) => !v);
       } else if (/^[0-9]$/.test(k)) {

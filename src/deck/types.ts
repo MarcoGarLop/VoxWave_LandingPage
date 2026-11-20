@@ -32,6 +32,11 @@ export interface SlideDef {
    * product itself — it dawns from the centre) or 'black' (a fade to black).
    */
   theme?: (build: number) => Theme;
+  /**
+   * A page that Enter opens (in a new tab) on this build — e.g. the live demo.
+   * The arrows / clicker still move through the deck as usual.
+   */
+  link?: (build: number) => string | undefined;
   /** Optional background mood for each build. */
   bg?: (build: number) => BackgroundState;
   /** DOM content (text, cards, labels). Receives the current build. */

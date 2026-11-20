@@ -4,7 +4,7 @@
  */
 const ready = new Map<string, string>();
 
-export const CLIPS = ['/media/app/session.mp4', '/media/device/device.mp4', '/media/device/device_rev.mp4'];
+export const CLIPS = ['/media/app/session.mp4', '/media/device/device.mp4', '/media/device/device_rev.mp4', '/media/world/world.mp4'];
 
 export function preload(urls: string[] = CLIPS) {
   for (const url of urls) {

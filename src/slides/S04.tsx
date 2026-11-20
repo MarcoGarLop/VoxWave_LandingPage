@@ -101,15 +101,15 @@ function Content({ build }: { build: number }) {
       {/* The 111 days */}
       <At build={build} at={0} until={2}>
         <div key="days" className="text-col" style={{ top: 150 }}>
-          <Fade dim={build >= 1} delay={0.9} y={24}>
+          <Fade dim={build >= 1} delay={0.4} y={24}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 22 }}>
-              <Counter className="number" style={{ fontSize: 200, color: 'var(--paper)' }} to={111} duration={2.6} delay={1.1} format={(v) => String(Math.round(v))} />
+              <Counter className="number" style={{ fontSize: 200, color: 'var(--paper)' }} to={111} duration={1.5} delay={0.5} format={(v) => String(Math.round(v))} />
               <span className="display d-64" style={{ color: 'var(--ink-60)' }}>
                 days
               </span>
             </div>
           </Fade>
-          <Fade dim={build >= 1} delay={1.6}>
+          <Fade dim={build >= 1} delay={0.9}>
             <p className="body" style={{ marginTop: 12, maxWidth: 640 }}>
               average wait for a <span style={{ color: 'var(--paper)' }}>first</span> neurology visit in Spain
             </p>
@@ -123,12 +123,12 @@ function Content({ build }: { build: number }) {
       {/* Emergencies */}
       <At build={build} at={1} until={2}>
         <div key="emerg" style={{ position: 'absolute', left: 1100, top: 150, width: 680 }}>
-          <Fade delay={2.6} y={20}>
+          <Fade delay={0.9} y={20}>
             <div className="number coral" style={{ fontSize: 150 }}>
-              <Counter to={72} duration={1.8} delay={2.8} format={(v) => `${Math.round(v)}%`} />
+              <Counter to={72} duration={1.2} delay={1.0} format={(v) => `${Math.round(v)}%`} />
             </div>
           </Fade>
-          <Fade delay={3.2}>
+          <Fade delay={1.4}>
             <p className="body" style={{ marginTop: 10 }}>
               of Parkinson’s hospital admissions are emergencies, not planned
             </p>
@@ -141,16 +141,16 @@ function Content({ build }: { build: number }) {
 
       {/* The line */}
       <At build={build} at={0}>
-        <VisitDot key="a" x={X_A} label="Visit" delay={2.2} />
+        <VisitDot key="a" x={X_A} label="Visit" delay={1.1} />
       </At>
       <At build={build} at={0}>
-        <VisitDot key="b" x={X_B} label="Next visit" delay={2.8} />
+        <VisitDot key="b" x={X_B} label="Next visit" delay={1.5} />
       </At>
       <At build={build} at={1}>
         <GapLabel key="gap" />
       </At>
       <At build={build} at={1}>
-        <Fade key="em" delay={2.4} style={{ position: 'absolute', left: X_SPIKE, top: WAVE_Y + 130 }}>
+        <Fade key="em" delay={0.8} style={{ position: 'absolute', left: X_SPIKE, top: WAVE_Y + 130 }}>
           <div className="mono coral" style={{ transform: 'translateX(-50%)', fontSize: 16, color: 'var(--coral)' }}>
             Emergency
           </div>
@@ -160,7 +160,7 @@ function Content({ build }: { build: number }) {
       {/* The insight */}
       <At build={build} at={2}>
         <div key="insight" className="text-col" style={{ top: 170, width: 1500 }}>
-          <Fade delay={0.4}>
+          <Fade delay={0.2}>
             <p className="body" style={{ fontSize: 40 }}>
               The problem is not a lack of treatment.
             </p>
@@ -168,7 +168,7 @@ function Content({ build }: { build: number }) {
           <h2 className="display d-88" style={{ marginTop: 22, maxWidth: 1400 }}>
             <Words
               text="It’s a lack of information between visits."
-              delay={1.1}
+              delay={0.6}
               wordClass={(w) => (w === 'between' || w === 'visits.' ? 'shimmer' : undefined)}
             />
           </h2>
@@ -181,7 +181,7 @@ function Content({ build }: { build: number }) {
 export const S04: SlideDef = {
   id: 'S04',
   builds: 3,
-  auto: [7, 7],
+  auto: [3.8, 3.8],
   notes:
     "Neurology is saturated: in Spain, the average wait just for a first appointment is a hundred and eleven days. Between visits, small changes go unnoticed until they become a fall, an infection, an emergency. Seven in ten Parkinson's admissions are emergencies, and each one costs thousands of euros. The problem is not a lack of treatment. It's a lack of information between visits.",
   wave: (b) => {
@@ -193,15 +193,15 @@ export const S04: SlideDef = {
         core: 1.5,
         glow: 1,
         echoes: 0.3,
-        duration: 3400,
-        stagger: 0.4,
+        duration: 2200,
+        stagger: 0.35,
         dir: 1,
       };
     }
     if (b === 1) spikeT0 = clock.t;
     // Something happens in the dark: an emergency nobody saw coming.
     return {
-      shape: timeline({ y: WAVE_Y, a: U_A, b: U_B, spike: { at: U_SPIKE, t0: spikeT0, after: b === 1 ? 2.2 : 0 } }),
+      shape: timeline({ y: WAVE_Y, a: U_A, b: U_B, spike: { at: U_SPIKE, t0: spikeT0, after: b === 1 ? 0.6 : 0 } }),
       paint: paintGap(true),
       duration: 1600,
       stagger: 0,

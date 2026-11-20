@@ -19,6 +19,16 @@ const FOV = 30;
  * One WebGL canvas that lives for the whole pitch. Slides never own WebGL:
  * they only send target states, and the engine morphs towards them.
  */
+/** Global tempo: every morph, flight and fade runs at this fraction of its written duration. */
+export const PACE = 0.78;
+function paceWave(s: WaveState): WaveState {
+  return {
+    ...s,
+    duration: s.duration !== undefined ? s.duration * PACE : undefined,
+    then: s.then ? { after: s.then.after * PACE, state: paceWave(s.then.state) } : undefined,
+  };
+}
+
 export class Engine {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
@@ -89,7 +99,8 @@ export class Engine {
 
   private waveTimer = 0;
 
-  setWave(s: WaveState, instant = false) {
+  setWave(raw: WaveState, instant = false) {
+    const s = paceWave(raw);
     clearTimeout(this.waveTimer);
     if (instant) this.wave.set(s, this.clock.getElapsedTime());
     else this.wave.to(s, this.now());
@@ -111,6 +122,7 @@ export class Engine {
       this.particles.to({ target: (p, c, z, n, t) => this.holdTarget(p, c, z, n, t), opacity: 0, duration: 1400, scatter: 0 }, this.now());
       return;
     }
+    s = { ...s, duration: (s.duration ?? 2000) * PACE };
     if (opts.seed === 'wave') this.seedFromWave();
     else if (typeof opts.seed === 'function') this.particles.seed(opts.seed);
     this.particles.to(opts.instant ? { ...s, duration: 1 } : s, opts.instant ? -1e9 : this.now());
@@ -147,7 +159,7 @@ export class Engine {
   }
 
   setBackground(s: BackgroundState) {
-    this.background.to(s, this.now());
+    this.background.to(s.duration ? { ...s, duration: s.duration * PACE } : s, this.now());
   }
 
   /** True while a fullscreen video hides the canvas. */
