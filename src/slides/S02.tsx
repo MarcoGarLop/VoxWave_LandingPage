@@ -177,7 +177,7 @@ function Fact({ i, latest }: { i: number; latest: boolean }) {
       exit={{ opacity: 0, transition: { duration: 0.4 } }}
       transition={{ duration: 1.1, ease }}
     >
-      <div className="mono" style={{ fontSize: 15, color: latest ? 'var(--coral)' : undefined, transition: 'color 1.2s' }}>
+      <div className="display" style={{ fontSize: 44, fontWeight: 700, letterSpacing: '0.02em', color: latest ? 'var(--coral)' : 'var(--ink-70)', transition: 'color 1.2s' }}>
         {f.label}
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 22, marginTop: 6 }}>

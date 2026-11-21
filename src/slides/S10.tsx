@@ -36,7 +36,7 @@ const KPIS = [
   { goal: 'Better triage', big: '≈ 3 weeks', line: 'From a sustained drift to a neurologist’s review. Today: 90 – 180 days.', primary: true },
   { goal: 'Fewer emergency admissions', big: '7 in 10', line: 'Parkinson’s admissions are emergencies today. We measure the drop against usual care.' },
   { goal: 'Savings for hospitals', big: '€50 / mo', line: 'Cost per patient avoided: stays, emergencies, visits, care. VoxWave pays off above 3.4%.' },
-  { goal: 'Better lives', big: 'PDQ-8', line: 'Quality of life, measured every three months against usual care.' },
+  { goal: 'Better lives', big: 'PDQ-8', line: 'Quality of life, measured every three months against usual care.', note: 'The standard Parkinson’s quality-of-life score: 8 questions.' },
 ];
 const COL_W = 400, COL_X0 = 120, COL_GAP = 26;
 const colX = (k: number) => COL_X0 + k * (COL_W + COL_GAP);
@@ -184,6 +184,11 @@ function Kpi({ k }: { k: number }) {
       >
         {m.big}
       </motion.div>
+      {'note' in m && m.note && (
+        <motion.div className="display" style={{ fontSize: 22, fontWeight: 600, lineHeight: 1.3, color: 'rgba(9,38,52,0.72)', marginTop: 16, maxWidth: 380 }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: d + 0.6 }}>
+          {m.note}
+        </motion.div>
+      )}
     </motion.div>
   );
 }

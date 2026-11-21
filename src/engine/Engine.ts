@@ -189,8 +189,33 @@ export class Engine {
     for (const o of hidden) o.visible = false;
   }
 
-  /** True while a fullscreen video hides the canvas. */
-  suspended = false;
+  /** True while a fullscreen video hides the canvas: no rendering, and the haze clips pause. */
+  private _suspended = false;
+  get suspended() {
+    return this._suspended;
+  }
+  set suspended(on: boolean) {
+    if (on === this._suspended) return;
+    this._suspended = on;
+    this.background.setPaused(on);
+  }
+
+  /**
+   * A clip on screen holds the engine asleep; it wakes only when the last hold is released.
+   * (One clip leaving while the next arrives must not wake it in between.)
+   */
+  private holds = 0;
+  hold() {
+    this.holds++;
+    this.suspended = true;
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      this.holds = Math.max(0, this.holds - 1);
+      if (this.holds === 0) this.suspended = false;
+    };
+  }
 
   start() {
     if (this.running) return;

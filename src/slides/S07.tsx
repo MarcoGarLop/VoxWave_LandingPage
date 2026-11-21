@@ -36,13 +36,51 @@ function useSuspend(on: boolean) {
   const eng = useEngine();
   useEffect(() => {
     const e = eng?.current;
-    if (!e) return;
-    e.suspended = on;
-    return () => {
-      e.suspended = false;
-    };
+    if (!e || !on) return;
+    return e.hold();
   }, [eng, on]);
 }
+
+/**
+ * Starts a clip and keeps it going: retries play() if the browser refuses or stalls it
+ * (entering fullscreen, a busy GPU, a slow decoder). Never throws.
+ */
+function useKeepPlaying(ref: React.RefObject<HTMLVideoElement>, rate: number) {
+  useEffect(() => {
+    const v = ref.current;
+    if (!v) return;
+    let tries = 0;
+    let timer = 0;
+    const kick = () => {
+      if (!v || v.ended) return;
+      v.playbackRate = rate;
+      v.play().catch(() => {
+        if (tries++ < 6) timer = window.setTimeout(kick, 350);
+      });
+    };
+    const nudge = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        if (!v.ended && (v.paused || v.readyState < 3)) kick();
+      }, 600);
+    };
+    v.currentTime = 0;
+    kick();
+    v.addEventListener('stalled', nudge);
+    v.addEventListener('waiting', nudge);
+    v.addEventListener('pause', nudge);
+    return () => {
+      window.clearTimeout(timer);
+      v.removeEventListener('stalled', nudge);
+      v.removeEventListener('waiting', nudge);
+      v.removeEventListener('pause', nudge);
+    };
+  }, [ref, rate]);
+}
+
+/** Seconds each clip should take at its playback speed (15.08 s and 10.04 s long). */
+const OPEN_SECONDS = 15.08 / RATE_OPEN; // ≈ 10.8 s
+const FADE_SECONDS = FADE_AT / RATE_CLOSE; // ≈ 3.2 s
 
 /** A fullscreen sentence, white on black. */
 function Statement({ text, size, top, delay = 0.6, weight }: { text: string; size: number; top: number; delay?: number; weight?: number }) {
@@ -103,12 +141,11 @@ function Explode() {
     const id = window.setTimeout(advance, LABEL_HOLD * 1000);
     return () => window.clearTimeout(id);
   }, [rest, advance]);
+  useKeepPlaying(ref, RATE_OPEN);
+  // Safety net: if the clip never reports its end, show the parts anyway.
   useEffect(() => {
-    const v = ref.current;
-    if (!v) return;
-    v.currentTime = 0;
-    v.playbackRate = RATE_OPEN;
-    v.play().catch(() => {});
+    const id = window.setTimeout(() => setRest(true), (OPEN_SECONDS + 3) * 1000);
+    return () => window.clearTimeout(id);
   }, []);
   return (
     <motion.div style={{ position: 'absolute', inset: 0 }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.3 } }} transition={{ duration: 1.4, ease }}>
@@ -165,19 +202,19 @@ function Reassemble() {
   const advance = useAdvance();
   const [src] = useState(() => media('/media/device/device_rev.mp4'));
   useSuspend(true);
-  useEffect(() => {
-    const v = ref.current;
-    if (!v) return;
-    v.currentTime = 0;
-    v.playbackRate = RATE_CLOSE;
-    v.play().catch(() => {});
-  }, []);
+  useKeepPlaying(ref, RATE_CLOSE);
   // The fade to black starts while the camera is still pushing in on the closed device.
   const fade = () => {
     if (gone.current) return;
     gone.current = true;
     advance();
   };
+  // Safety net: if the clip stalls, still move on to "…and we built it."
+  useEffect(() => {
+    const id = window.setTimeout(fade, (FADE_SECONDS + 2.5) * 1000);
+    return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <motion.div style={{ position: 'absolute', inset: 0 }} initial={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 1.0, ease: [0.65, 0, 0.35, 1] } }}>
       <video

@@ -175,6 +175,21 @@ export class Background {
     });
   }
 
+  /**
+   * While a fullscreen clip plays, the atmosphere clips stop decoding (one decoder less in
+   * use). On resume the active copy restarts if it ran out, so the haze never freezes.
+   */
+  setPaused(paused: boolean) {
+    if (!this.hasVideo) return;
+    if (paused) {
+      for (const v of this.vids) v.el.pause();
+      return;
+    }
+    const cur = this.vids[this.active];
+    if (cur.el.ended || (cur.el.duration && cur.el.currentTime >= cur.el.duration - 0.05)) cur.el.currentTime = 0;
+    cur.el.play().catch(() => {});
+  }
+
   /** Cross-fade the two loop copies around the seam. */
   private tickVideo() {
     if (!this.hasVideo) return;

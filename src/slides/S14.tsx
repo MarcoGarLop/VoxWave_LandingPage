@@ -31,7 +31,7 @@ const RECEIPT: Line[] = [
   { k: 'item', label: 'Case & packaging', value: '€10.00' },
   { k: 'total', label: 'DEVICE', value: '€39.00' },
   { k: 'gap' },
-  { k: 'head', label: 'EVERY YEAR · PER PATIENT' },
+  { k: 'head', label: 'EVERY YEAR · PER PATIENT', value: 'At 1,000 patients' },
   { k: 'item', label: 'Device (reused 3 years)', value: '€13' },
   { k: 'item', label: 'Cloud & AI, hosted in the EU', value: '€12' },
   { k: 'item', label: 'Clinical & patient support', value: '€36' },
@@ -124,7 +124,12 @@ function Receipt({ t }: { t: number }) {
             transition={{ duration: 0.15 }}
           >
             {l.label && <span style={{ whiteSpace: 'nowrap' }}>{l.label}</span>}
-            {l.value && (
+            {l.value && l.k === 'head' && (
+              <span style={{ marginLeft: 'auto', background: CORAL, color: '#fbf9f5', padding: '5px 14px', borderRadius: 16, fontSize: 18, fontWeight: 700, letterSpacing: '0.06em', transform: 'translateY(-4px)' }}>
+                {l.value}
+              </span>
+            )}
+            {l.value && l.k !== 'head' && (
               <>
                 <span style={{ flex: 1, borderBottom: l.k === 'item' ? '2px dotted rgba(9,38,52,0.22)' : 'none', transform: 'translateY(-5px)' }} />
                 <span>{l.value}</span>
@@ -269,7 +274,7 @@ export const S14: SlideDef = {
   id: 'S14',
   builds: 1,
   notes:
-    "Each device costs us thirty-nine euros; each patient, about a hundred and forty-five a year, medical regulation included. That's a seventy percent gross margin, in line with Omada and Hinge Health. And every new patient pays back in thirty-eight days.",
+    "Each device costs us thirty-nine euros; each patient, about a hundred and forty-five a year at a thousand patients, medical regulation included. That's a seventy percent gross margin, in line with Omada and Hinge Health. And every new patient pays back in thirty-eight days.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

@@ -5,7 +5,7 @@
 const ready = new Map<string, string>();
 const pending = new Map<string, Promise<void>>();
 
-export const CLIPS = ['/media/app/session.mp4', '/media/device/device.mp4', '/media/device/device_rev.mp4', '/media/world/world.mp4'];
+export const CLIPS = ['/media/app/session.mp4', '/media/device/device.mp4', '/media/device/device_rev.mp4'];
 
 /** Every still the slides show, decoded up front so none of them pops in late. */
 export const IMAGES = [
