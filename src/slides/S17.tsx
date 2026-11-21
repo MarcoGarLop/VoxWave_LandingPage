@@ -184,26 +184,65 @@ function Weekend() {
 }
 
 // ---------- Build 1: what we learned, and the paper we wrote about it ----------
-const LEARNED = [
-  {
-    test: 'Can silence predict Parkinson’s?',
-    big: '0.83',
-    showed: 'AUROC from silence alone. The model was hearing the room, not her voice.',
-    changed: 'We remove the room from every recording.',
-  },
-  {
-    test: 'Does it work in other languages?',
-    big: '0.79',
-    showed: 'Trained only on Spanish, tested on English. No retraining.',
-    changed: 'A new language is a calibration, not a new product.',
-  },
-  {
-    test: 'Does it follow how she’s doing?',
-    big: 'ρ 0.49',
-    showed: 'Its index tracks motor severity, beyond age',
-    changed: 'It measures change, not just yes or no.',
-  },
-];
+// Left side: one result, said plainly. AUROC 0.91 = given one voice with Parkinson's and one
+// without, the model ranks the right one higher 9 times out of 10.
+const NINE = { x: 120, w: 1040, top: 270, bottom: 900 };
+const ROW_D = 0.7;
+
+/** A round voice icon: filled coral with a white wave (9), or a grey outline (the miss). */
+function VoiceDot({ hit, i }: { hit: boolean; i: number }) {
+  return (
+    <motion.svg
+      width={70}
+      height={70}
+      viewBox="0 0 70 70"
+      initial={{ opacity: 0, scale: 0.6 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5, ease, delay: ROW_D + 0.9 + i * 0.09 }}
+    >
+      <circle cx={35} cy={35} r={hit ? 33 : 32} fill={hit ? CORAL : 'none'} stroke={hit ? 'none' : 'rgba(9,38,52,0.3)'} strokeWidth={2.5} />
+      <path
+        d="M14 35 L20 35 L24 26 L29 45 L34 20 L39 50 L44 28 L48 40 L51 35 L56 35"
+        fill="none"
+        stroke={hit ? '#fbf9f5' : 'rgba(9,38,52,0.35)'}
+        strokeWidth={3}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </motion.svg>
+  );
+}
+
+function NineInTen() {
+  const line = { height: 2, background: 'rgba(9,38,52,0.1)' };
+  return (
+    <div style={{ position: 'absolute', left: NINE.x, top: NINE.top, width: NINE.w, height: NINE.bottom - NINE.top, display: 'flex', flexDirection: 'column' }}>
+      <div style={line} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <motion.div style={{ display: 'flex', alignItems: 'baseline', gap: 22 }} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, ease, delay: ROW_D }}>
+          <span className="number" style={{ fontSize: 290, lineHeight: 0.82, color: NAVY }}>
+            9
+          </span>
+          <span className="display" style={{ fontSize: 64, fontWeight: 600, color: 'rgba(9,38,52,0.45)' }}>
+            in 10
+          </span>
+        </motion.div>
+        <div style={{ display: 'flex', gap: 16, marginTop: 44 }}>
+          {Array.from({ length: 10 }, (_, i) => (
+            <VoiceDot key={i} i={i} hit={i < 9} />
+          ))}
+        </div>
+        <motion.div className="display" style={{ fontSize: 36, fontWeight: 600, lineHeight: 1.25, color: NAVY, marginTop: 40, maxWidth: 1000 }} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease, delay: ROW_D + 2.0 }}>
+          Play it one voice with Parkinson’s and one without: it picks the right one 9 times out of 10.
+        </motion.div>
+        <motion.div className="body" style={{ fontSize: 18, color: 'rgba(9,38,52,0.55)', marginTop: 16 }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: ROW_D + 2.5 }}>
+          AUROC 0.91 · 107 people · always tested on people the model had never heard
+        </motion.div>
+      </div>
+      <div style={line} />
+    </div>
+  );
+}
 
 // The preprint, set like the studies on the evidence slide.
 const PAPER_TITLE = ['Channel-robust speech biomarkers', 'for between-visit monitoring of', 'Parkinson’s disease: confound', 'control, cross-lingual validation', 'and a personal-baseline tracking rule'];
@@ -213,7 +252,7 @@ const PAPER_FACTS: [string, string][] = [
   ['3', 'languages'],
 ];
 const SHEET = { x: 1236, y: 236, w: 564, h: 700 };
-const ROW_D = 0.7, ROW_GAP = 0.4, SHEET_D = 0.5;
+const SHEET_D = 0.5;
 const ptex = (line: string) => String.raw`\text{${line.replace(/([&%$#_{}])/g, '\\$1')}}`;
 
 prewarmTex(PAPER_TITLE.map(ptex));
@@ -281,32 +320,7 @@ function Learned() {
           <Words text="We tested. We learned. We changed." delay={0.15} wordClass={(w) => (w === 'learned.' ? 'coral' : undefined)} />
         </h2>
       </div>
-      <div style={{ position: 'absolute', left: 120, top: 270, width: 1040 }}>
-        {LEARNED.map((r, i) => (
-          <motion.div
-            key={r.test}
-            style={{ display: 'grid', gridTemplateColumns: '300px 330px 1fr', gap: 36, alignItems: 'center', padding: '30px 0', borderTop: '2px solid rgba(9,38,52,0.1)' }}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease, delay: ROW_D + i * ROW_GAP }}
-          >
-            <div className="display" style={{ fontSize: 29, fontWeight: 700, color: NAVY, lineHeight: 1.15 }}>
-              {r.test}
-            </div>
-            <div>
-              <div className="number" style={{ fontSize: 56, lineHeight: 1, color: NAVY }}>
-                {r.big}
-              </div>
-              <div className="body" style={{ fontSize: 19, color: INK, marginTop: 8, lineHeight: 1.3 }}>
-                {r.showed}
-              </div>
-            </div>
-            <div className="display" style={{ fontSize: 27, fontWeight: 700, color: CORAL, lineHeight: 1.2 }}>
-              → {r.changed}
-            </div>
-          </motion.div>
-        ))}
-      </div>
+      <NineInTen />
       <PaperSheet />
     </div>
   );
@@ -344,7 +358,7 @@ export const S17B: SlideDef = {
   id: 'S17B',
   builds: 1,
   notes:
-    "Then we tested, we learned, and we changed. Silence alone could predict Parkinson's: the model was hearing the room, not her voice, so now we remove the room. Trained only on Spanish, it works in English. And it measures change, not just yes or no. All of it, in our paper.",
+    "We tested, we learned, and we changed. Play it one voice with Parkinson's and one without: it picks the right one nine times out of ten, always on people it had never heard before. All of it, in our paper.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

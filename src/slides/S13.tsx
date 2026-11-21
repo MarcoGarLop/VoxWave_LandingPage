@@ -25,7 +25,7 @@ const T = { head: 0.15, nodes: 0.45, fee: 1.2, care: 2.5, zero: 3.4, river: 4.1,
 type NodeKey = 'maria' | 'clinic' | 'vox' | 'insurer';
 const NODES: Record<NodeKey, { x: number; y: number; name: string; role: string; win: string; delay: number }> = {
   maria: { x: 330, y: 500, name: 'María', role: 'Patient', win: '€0 · someone listens every day', delay: 0 },
-  clinic: { x: 960, y: 500, name: 'Clinic or hospital', role: 'Pays', win: 'Saves €50 for every €40 it pays', delay: 0.15 },
+  clinic: { x: 960, y: 500, name: 'Clinic or hospital', role: 'Pays', win: 'Saves ≈ €500 a year for €480 · guaranteed', delay: 0.15 },
   vox: { x: 1590, y: 500, name: 'VoxWave', role: 'Paid monthly', win: 'Recurring revenue · ≈ 70% gross margin', delay: 0.3 },
   insurer: { x: 1300, y: 806, name: 'Insurers', role: 'Next', win: 'Every avoided stay is a direct saving', delay: 0 },
 };
@@ -287,7 +287,7 @@ function Content() {
       {/* flow labels */}
       <motion.div style={{ position: 'absolute', left: fx - 300, top: fy - 108, width: 440, textAlign: 'center' }} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease, delay: T.fee + 0.4 }}>
         <div className="display" style={{ fontSize: 30, fontWeight: 700, color: NAVY }}>
-          €40 <span style={{ fontSize: 22, fontWeight: 600 }}>/ patient / month</span>
+          €40 <span style={{ fontSize: 22, fontWeight: 600 }}>/ patient / month · €480 a year</span>
         </div>
         <motion.div className="body" style={{ fontSize: 19, color: INK, marginTop: 2 }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: T.fee + 1.0 }}>
           less than one private neurology visit (€75 – 180)
@@ -298,10 +298,10 @@ function Content() {
       </motion.div>
       <motion.div style={{ position: 'absolute', left: rx - 300, top: ry + 104, width: 600, textAlign: 'center' }} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease, delay: T.river + 0.5 }}>
         <div className="number" style={{ fontSize: 50, lineHeight: 1, color: CORAL }}>
-          ≈ €50 <span style={{ fontSize: 24 }}>/ patient / month</span>
+          ≈ €500 <span style={{ fontSize: 24 }}>/ patient / year</span>
         </div>
         <div className="display" style={{ fontSize: 20, fontWeight: 600, color: NAVY, marginTop: 6 }}>
-          saved: fewer emergencies, visits and complications
+          saved: fewer emergencies, admissions and unscheduled visits
         </div>
       </motion.div>
 
@@ -329,7 +329,7 @@ export const S13: SlideDef = {
   id: 'S13',
   builds: 1,
   notes:
-    "The model is simple. The hospital pays forty euros a patient a month, less than one private neurology visit. María pays nothing. And about fifty euros a month flows back to the hospital: fewer emergencies, fewer visits, fewer complications. Everyone wins.",
+    "The model is simple. The hospital pays forty euros a patient a month, less than one private neurology visit. María pays nothing. And about five hundred euros a year flows back to the hospital, guaranteed. Everyone wins.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

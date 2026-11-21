@@ -18,15 +18,15 @@ const CORAL = C.coral;
 const PATHS = [
   {
     k: 'Other languages',
-    big: '0.79',
-    line: 'Trained only on Spanish, our model recognises Parkinson’s in English. No retraining.',
-    src: 'VoxWave preprint · 2026',
+    big: '≥ 0.93',
+    line: 'Spanish, English and Italian: above 0.9 in all three.',
+    src: 'VoxWave preprint · 2026 · AUROC, trained on all three',
   },
   {
     k: 'Other diseases',
-    big: '97%',
-    line: 'Speech AI already tells post-stroke speech apart from healthy speech.',
-    src: 'Sanguedolce et al. · Interspeech 2025 · F1 score',
+    big: '100M+',
+    line: 'people live after a stroke. Voice AI already detects post-stroke speech.',
+    src: 'World Stroke Organization 2022 · Sanguedolce et al., Interspeech 2025',
   },
 ];
 
@@ -74,7 +74,7 @@ export const S18: SlideDef = {
   id: 'S18',
   builds: 1,
   notes:
-    "And this is just the beginning. Trained only on Spanish, our model already recognises Parkinson's in English. And voice AI already detects stroke, with a ninety-seven percent score in recent research. One voice model. Many languages. Many diseases.",
+    "And this is just the beginning. Trained on Spanish, English and Italian, our model scores above zero point nine in all three. And more than a hundred million people live after a stroke: voice AI already detects it. One voice model. Many languages. Many diseases.",
   theme: () => 'dark',
   // Many voices, braided: the same model listening to more than one language and disease.
   wave: () => ({

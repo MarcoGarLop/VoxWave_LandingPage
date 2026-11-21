@@ -11,7 +11,7 @@ const ease = EASE as unknown as [number, number, number, number];
  * Built to last — part 1, on paper.
  * Left, "For us": the contribution line climbs out of the red and crosses zero at
  * break-even. Right, "For the hospital": a balance, per patient per month. VoxWave
- * (€40) lands on one pan; on the other, what better monitoring saves the hospital
+ * (€480 a year) lands on one pan; on the other, what earlier detection saves the hospital
  * (≈ €50: fewer emergency admissions, unplanned visits and complications). The
  * savings side goes down: every €1 in comes back as €1.25.
  */
@@ -28,8 +28,8 @@ const T = {
   line1: 4.2,
   scale: 2.6, // the balance appears
   vox: 3.5, // VoxWave lands on the left pan
-  costs: [4.6, 5.4, 6.1], // what the hospital saves lands on the right pan, block by block
-  final: 7.0,
+  costs: [4.8], // what the hospital saves lands on the right pan
+  final: 6.2,
 };
 
 // ---------- Left: break-even chart ----------
@@ -42,19 +42,13 @@ const py = (p: number) => CH.zero - ((p - BE) / BE) * CH.half; // straight line 
 const PIV = { x: 1390, y: 470 };
 const ARM = 250, HANG = 150;
 const VOX = { w: 150, h: 92 };
-// What better monitoring saves the hospital, per patient per month. Total ≈ €50 (€600 a year):
-// a conservative estimate, below the published PKG model (≈ €920 a year ≈ €77 a month,
-// Chaudhuri et al. 2022). Split in the proportions of our bottom-up model: avoided emergency
-// admissions (Spain: €4,378 per PD admission, 86% via the ER, Gil-Prieto et al. 2016),
-// in-person visits replaced by the remote report, and fewer falls and fractures.
-const PRICE = 40;
-const COSTS = [
-  { label: 'Emergency admissions', value: 28, w: 300, h: 58 },
-  { label: 'In-person visits', value: 16, w: 300, h: 42 },
-  { label: 'Falls & fractures', value: 6, w: 300, h: 32 },
-];
+// Per patient per year. One in three patients has motor fluctuations; for them, late detection
+// costs ≈ €2,000 a year in emergencies, admissions and unscheduled visits (one admission ≈
+// €4,400, Gil-Prieto et al. 2016). VoxWave avoids ≈ 25% of that: ≈ €500. If the real saving is
+// lower, the price adjusts to the results: the hospital never loses money.
+const PRICE = 480;
+const COSTS = [{ label: '25% of €2,000', value: 500, w: 300, h: 100 }];
 const SAVED = COSTS.reduce((s, c) => s + c.value, 0);
-const RETURN = (SAVED / PRICE).toFixed(2); // 1.25
 const DROP = 0.42; // seconds of free fall
 const eur = (v: number) => `€${Math.round(v).toLocaleString('en-US')}`;
 
@@ -149,7 +143,7 @@ function Balance({ t }: { t: number }) {
   const settle = (land: number) => clamp((t - land) / 0.25);
   const L = PRICE * settle(T.vox);
   const R = COSTS.reduce((s, c, i) => s + c.value * settle(T.costs[i]), 0);
-  const target = 10 * Math.tanh((R - L) / 8); // degrees; + = right side down
+  const target = 10 * Math.tanh((R - L) / 60); // degrees; + = right side down (a small, honest tip)
   const ang = useSpring(target, t);
   const a = (ang * Math.PI) / 180;
   const end = (side: -1 | 1): [number, number] => [PIV.x + side * ARM * Math.cos(a), PIV.y + side * ARM * Math.sin(a)];
@@ -179,7 +173,7 @@ function Balance({ t }: { t: number }) {
           <path d={`M${pn.x - 92} ${pn.y} Q${pn.x} ${pn.y + 34} ${pn.x + 92} ${pn.y}`} stroke={NAVY} strokeWidth={6} fill="none" strokeLinecap="round" />
         </g>
       ))}
-      {/* VoxWave: €40, one patient for a month */}
+      {/* VoxWave: €480, one patient for a year */}
       {t >= T.vox - DROP &&
         (() => {
           const y = fall(T.vox, lPan.y, -VOX.h - 6);
@@ -192,7 +186,7 @@ function Balance({ t }: { t: number }) {
                 VoxWave
               </text>
               <text x={x + VOX.w / 2} y={y + 74} textAnchor="middle" fontFamily="Sora, sans-serif" fontWeight={700} fontSize={32} fill="#fbf9f5">
-                €40
+                €480
               </text>
               {hit > 0.02 && <rect x={x - 4} y={y - 4} width={VOX.w + 8} height={VOX.h + 8} rx={12} fill="none" stroke={CORAL} strokeWidth={2} opacity={hit} />}
             </g>
@@ -252,7 +246,7 @@ function Content() {
         {status}
       </motion.div>
       <h2 className="display" style={{ position: 'absolute', left: 120, top: 104, fontSize: 52, color: NAVY }}>
-        <Words text="Clinics pay, not grants. And they get more back." delay={T.head} />
+        <Words text="Clinics pay, not grants. And they never lose." delay={T.head} />
       </h2>
 
       {/* divider */}
@@ -288,15 +282,15 @@ function Content() {
       {/* ---- For the clinic ---- */}
       <motion.div style={{ position: 'absolute', left: 1040, top: 232 }} {...rise(T.cols + 0.15)}>
         <div className="mono" style={{ fontSize: 17, color: CORAL }}>
-          For the hospital · per patient, per month
+          For the hospital · per patient, per year
         </div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginTop: 6 }}>
           <span className="number" style={{ fontSize: 86, lineHeight: 1, color: t >= T.final ? CORAL : NAVY, transition: 'color .4s' }}>
-            {t < T.costs[0] ? `€${PRICE}` : t < T.final ? `€${PRICE} → ${eur(landed)}` : `€1 → €${RETURN}`}
+            {t < T.costs[0] ? `€${PRICE}` : t < T.final ? `€${PRICE} → ${eur(landed)}` : '€0 risk'}
           </span>
           {t >= T.final && (
             <motion.span className="display" style={{ fontSize: 26, fontWeight: 600, color: NAVY }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
-              back for every euro
+              for the hospital. Guaranteed.
             </motion.span>
           )}
         </div>
@@ -304,10 +298,10 @@ function Content() {
       <Balance t={t} />
       <motion.div style={{ position: 'absolute', left: 1040, top: 832, width: 790 }} {...rise(T.final)}>
         <div className="display" style={{ fontSize: 25, fontWeight: 600, color: CORAL, lineHeight: 1.25 }}>
-          Catch changes early: fewer emergency admissions, fewer visits, fewer falls. VoxWave pays for itself, and then some.
+          VoxWave pays for itself. If the savings come in lower, our price adjusts to the results.
         </div>
         <div className="body" style={{ fontSize: 16, marginTop: 10, color: INK, lineHeight: 1.4 }}>
-          Conservative estimate · published models: ≈ €77 a month (Chaudhuri et al. 2022) · Spain: €4,378 per admission, 86% via the ER (Gil-Prieto et al. 2016)
+          Estimate for patients with motor fluctuations (1 in 3): late detection ≈ €2,000 a year in emergencies, admissions and unscheduled visits · one admission ≈ €4,400 (Gil-Prieto et al. 2016)
         </div>
       </motion.div>
     </div>
@@ -318,7 +312,7 @@ export const S11: SlideDef = {
   id: 'S11',
   builds: 1,
   notes:
-    "And it's built to last. Clinics pay, not grants, and we break even at three hundred and forty patients: just zero point one seven percent of patients in Spain covers all our costs. For the hospital, VoxWave costs forty euros a patient a month, and better monitoring saves about fifty: fewer emergency admissions, fewer in-person visits, fewer falls. Every euro comes back as one euro twenty-five.",
+    "And it's built to last. Clinics pay, not grants, and we break even at three hundred and forty patients: just zero point one seven percent of patients in Spain covers all our costs. For the hospital, VoxWave costs four hundred and eighty euros a patient a year. Late detection costs about two thousand, in emergencies, admissions and unscheduled visits. We avoid a quarter of that: about five hundred. And if the savings come in lower, our price adjusts. The hospital never loses money.",
 
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
