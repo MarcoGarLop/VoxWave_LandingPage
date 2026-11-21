@@ -101,9 +101,11 @@ function at(pos: Float32Array, i: number, x: number, y: number) {
   pos[i * 3 + 2] = 0;
 }
 
+let sweepT0: number | null = null;
+
 function sonar(t0: number, calm: boolean): ParticleTarget {
   return (pos, col, size, n, t) => {
-    const k = calm ? 30 + (t - t0) : t - t0; // build 1: everything already found
+    const k = t - t0; // one continuous clock across both builds: the sweep never jumps
     const appear = calm ? 1 : io((k - 0.2) / 1.2);
     const th = sweepDeg(k) * D2R;
     for (let i = 0; i < n; i++) {
@@ -359,8 +361,11 @@ export const S16B: SlideDef = {
   // No thread on this slide: the sonar carries it alone.
   wave: () => ({ shape: wave({ y: 1010, amp: 10, speed: 0.6 }), paint: coralPaint, opacity: 0, duration: 1200, stagger: 0 }),
   particles: (b) => {
-    const t0 = clock.t;
-    return { state: { target: sonar(t0, b >= 1), duration: b === 0 ? 1800 : 900, scatter: b === 0 ? 0.4 : 0, size: 5.2 } };
+    // Build 1 keeps build 0's clock, so the sweep carries on instead of snapping to a new angle.
+    // Opened straight on build 1 (a deep link): start the clock as if everything had been found.
+    const now = clock.t;
+    if (b === 0 || sweepT0 === null) sweepT0 = b === 0 ? now : now - (US_AT + 2.6);
+    return { state: { target: sonar(sweepT0, b >= 1), duration: b === 0 ? 1800 : 900, scatter: b === 0 ? 0.4 : 0, size: 5.2 } };
   },
   bg: () => ({ pool: [0.62, 0.55], poolStrength: 1, warm: 0.5 }),
   Content,

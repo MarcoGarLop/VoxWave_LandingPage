@@ -10,7 +10,7 @@ const ease = EASE as unknown as [number, number, number, number];
 /**
  * Week 3 — the impact, on paper.
  * María's voice, day by day since her last visit, inside her own baseline band.
- * Suddenly it drops. Nine days later the alert fires and her next visit — pinned on
+ * Suddenly it drops. After three weeks of sustained drift the alert fires and her next visit — pinned on
  * the timeline at day 180 — slides back to just after the alert. After that earlier
  * visit her voice returns to baseline; in grey, what would have happened without us.
  */

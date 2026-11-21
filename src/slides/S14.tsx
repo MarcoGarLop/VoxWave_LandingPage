@@ -53,7 +53,7 @@ T.days0 = T.right + 0.6;
 const PAID_AT = T.days0 + PAYBACK_DAY * T.dayGap;
 
 // ---------- Geometry ----------
-const RC = { x: 150, w: 600, slot: 196, line: 31 };
+const RC = { x: 120, w: 730, slot: 190, line: 37 };
 const YR = { x: 920, y: 560, cell: 132, h: 96, gap: 14, cols: 6 };
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -77,7 +77,7 @@ function useElapsed() {
 function Receipt({ t }: { t: number }) {
   const printed = clamp((t - T.print0) / (RECEIPT.length * T.lineGap)) * RECEIPT.length;
   const n = Math.floor(printed);
-  const paperH = 92 + printed * RC.line + (printed >= RECEIPT.length ? 30 : 0);
+  const paperH = 98 + printed * RC.line + (printed >= RECEIPT.length ? 30 : 0);
   return (
     <>
       <div style={{ position: 'absolute', left: RC.x - 22, top: RC.slot - 14, width: RC.w + 44, height: 16, borderRadius: 8, background: NAVY }} />
@@ -94,11 +94,11 @@ function Receipt({ t }: { t: number }) {
           clipPath: `polygon(0 0, 100% 0, 100% calc(100% - 10px), ${Array.from({ length: 31 }, (_, i) => `${100 - (i + 0.5) * (100 / 30)}% ${i % 2 ? '100%' : 'calc(100% - 10px)'}`).join(', ')}, 0 calc(100% - 10px))`,
         }}
       >
-        <div className="mono" style={{ position: 'absolute', left: 30, right: 30, top: 22, fontSize: 15, color: NAVY, display: 'flex', justifyContent: 'space-between' }}>
+        <div className="mono" style={{ position: 'absolute', left: 34, right: 34, top: 22, fontSize: 18, color: NAVY, display: 'flex', justifyContent: 'space-between' }}>
           <span>VOXWAVE · COST SHEET</span>
           <span style={{ color: TEAL }}>ESP32 · MEDICAL GRADE</span>
         </div>
-        <div style={{ position: 'absolute', left: 30, right: 30, top: 52, borderTop: '2px dashed rgba(9,38,52,0.25)' }} />
+        <div style={{ position: 'absolute', left: 34, right: 34, top: 56, borderTop: '2px dashed rgba(9,38,52,0.25)' }} />
         {RECEIPT.slice(0, n).map((l, i) => (
           <motion.div
             key={i}
@@ -107,8 +107,8 @@ function Receipt({ t }: { t: number }) {
               position: 'absolute',
               left: 30,
               right: 30,
-              top: 70 + i * RC.line,
-              fontSize: l.k === 'head' ? 14 : 18,
+              top: 76 + i * RC.line,
+              fontSize: l.k === 'head' ? 17 : 22,
               color: l.k === 'head' ? CORAL : NAVY,
               fontWeight: l.k === 'total' ? 700 : 400,
               display: 'flex',
@@ -134,7 +134,7 @@ function Receipt({ t }: { t: number }) {
         ))}
       </div>
       {/* the margin, stamped on the torn edge */}
-      <div style={{ position: 'absolute', left: RC.x + RC.w - 150, top: RC.slot + 70 + RECEIPT.length * RC.line + 4 }}>
+      <div style={{ position: 'absolute', left: RC.x + RC.w - 150, top: RC.slot + 76 + RECEIPT.length * RC.line + 4 }}>
         <motion.div
           style={{ width: 230, height: 116, borderRadius: 16, border: `4px solid ${CORAL}`, color: CORAL, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,254,251,0.9)' }}
           initial={{ opacity: 0, scale: 1.7, rotate: -18 }}
