@@ -26,14 +26,14 @@ type Item = { at: number; clock: string; item: Photo | Mail };
 const W = '/media/weekend/';
 const ITEMS: Item[] = [
   { at: 0.7, clock: 'Thu · afternoon', item: { kind: 'mail', who: 'Kipras P.', initials: 'KP', org: 'Voice-data researcher', country: 'Lithuania', quote: '“I’ll put you in contact with a PhD working on the topic.”', shots: [{ src: W + 'kipras.png', h: 44 }] } },
-  { at: 1.7, clock: 'Thu · afternoon', item: { kind: 'mail', who: 'Joonas Järve', initials: 'JJ', org: 'University of Tartu', country: 'Estonia', quote: '“Let’s arrange a short call to get to know you and your idea!”', shots: [{ src: W + 'joonas.png', h: 160 }], logo: { src: '/media/partners/tartu.png', h: 44 } } },
+  { at: 1.7, clock: 'Thu · afternoon', item: { kind: 'mail', who: 'Joonas Järve', initials: 'JJ', org: 'University of Tartu', country: 'Estonia', quote: '“Let’s arrange a short call to get to know you and your idea!”', shots: [{ src: W + 'joonas.png', h: 160 }], logo: { src: '/media/partners/tartu.png', h: 60 } } },
   { at: 2.7, clock: 'Thu · 16:51', item: { kind: 'photo', src: W + 'parts.jpg', caption: 'Thu 16:51 · a box of parts', x: 130, y: 196, w: 250, rot: -5 } },
   { at: 3.6, clock: 'Thu · 17:17', item: { kind: 'photo', src: W + 'wired.jpg', caption: 'Thu 17:17 · first wiring', x: 410, y: 250, w: 240, rot: 3.5 } },
-  { at: 4.6, clock: 'Thu · evening', item: { kind: 'mail', who: 'Evaldas Vaičiukynas', initials: 'EV', org: 'Kaunas University of Technology', country: 'Lithuania', quote: '“I’d see testing AUC on Spanish.” — so we did.', shots: [{ src: W + 'evaldas2.png', h: 140 }], logo: { src: '/media/partners/ktu.png', h: 30 } } },
+  { at: 4.6, clock: 'Thu · evening', item: { kind: 'mail', who: 'Evaldas Vaičiukynas', initials: 'EV', org: 'Kaunas University of Technology', country: 'Lithuania', quote: '“I’d see testing AUC on Spanish.” — so we did.', shots: [{ src: W + 'evaldas2.png', h: 140 }], logo: { src: '/media/partners/ktu.png', h: 44 } } },
   { at: 5.9, clock: 'Fri · 01:38', item: { kind: 'photo', src: W + 'case.jpg', caption: 'Fri 01:38 · it has a body', x: 680, y: 186, w: 270, rot: -2.5 } },
-  { at: 7.0, clock: 'Fri · 09:29', item: { kind: 'mail', who: 'Cristina Ibarrola', initials: 'CI', org: 'Asociación Navarra de Parkinson', country: 'Spain', quote: '“Nos parece un proyecto muy interesante.”', shots: [{ src: W + 'cristina.png', h: 66 }], logo: { src: '/media/partners/fep_color.png', h: 46 } } },
+  { at: 7.0, clock: 'Fri · 09:29', item: { kind: 'mail', who: 'Cristina Ibarrola', initials: 'CI', org: 'Asociación Navarra de Parkinson', country: 'Spain', quote: '“Nos parece un proyecto muy interesante.”', shots: [{ src: W + 'cristina.png', h: 66 }], logo: { src: '/media/partners/fep_color.png', h: 60 } } },
   // TODO before the final: replace with the exact words (and a crop) of the hospital's real email.
-  { at: 8.0, clock: 'Fri', item: { kind: 'mail', who: 'Neurology team', initials: 'GM', country: 'Spain', quote: 'A very interesting idea, with a big market opportunity: the need is real.', shots: [], logo: { src: '/media/partners/maranon_color.svg', h: 34 } } },
+  { at: 8.0, clock: 'Fri', item: { kind: 'mail', who: 'Neurology team', initials: 'GM', country: 'Spain', quote: 'A very interesting idea, with a big market opportunity: the need is real.', shots: [], logo: { src: '/media/partners/maranon_color.svg', h: 48 } } },
 ];
 const ALL_IN = 9.2;
 const SNIP = 0.45; // the real email, small, as proof under the quote
