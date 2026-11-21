@@ -25,7 +25,7 @@ const PAPERS = [
     who: 'Rusz et al. · 2021',
   },
   {
-    finding: 'An ordinary phone call is enough.',
+    finding: 'Everyday recordings catch it early.',
     title: 'Smartphone voice calls provide early biomarkers of parkinsonism in rapid eye movement sleep behavior disorder',
     who: 'Illner et al. · 2024',
   },
@@ -113,7 +113,7 @@ export const S03E: SlideDef = {
   id: 'S03E',
   builds: 1,
   notes:
-    "And science tells us something powerful: the voice can be measured. It tracks how severe the disease is. It changes years before diagnosis. An ordinary phone call is enough. And it works from home.",
+    "And science tells us something powerful: the voice can be measured. It tracks how severe the disease is. It changes years before diagnosis. Everyday recordings catch it early. And it works from home.",
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1200, stagger: 0 }),
   particles: () => null,
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 0.9, warm: 0.7 }),

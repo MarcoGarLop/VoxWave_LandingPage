@@ -23,9 +23,9 @@ const TEAM = [
 ];
 
 const NUMBERS: { to: number; fmt: (v: number) => string; label: string; src: string }[] = [
-  { to: 11.8, fmt: (v) => `${v.toFixed(1)}M`, label: 'live with Parkinson’s today', src: 'GBD 2021' },
-  { to: 25.2, fmt: (v) => `${v.toFixed(1)}M`, label: 'with Parkinson’s by 2050', src: 'BMJ 2025' },
-  { to: 101, fmt: (v) => `${Math.round(v)}M`, label: 'live after a stroke', src: 'World Stroke Organization 2022' },
+  { to: 200000, fmt: (v) => `${(Math.round(v / 1000) * 1000).toLocaleString('en-US')}+`, label: 'in Spain', src: 'SEN 2026' },
+  { to: 11.8, fmt: (v) => `${v.toFixed(1)}M`, label: 'in the world today', src: 'GBD 2021' },
+  { to: 25.2, fmt: (v) => `${v.toFixed(1)}M`, label: 'by 2050', src: 'BMJ 2025' },
 ];
 
 function Content({ build }: { build: number }) {
@@ -104,7 +104,7 @@ export const S20: SlideDef = {
   builds: 2,
   auto: [7.5],
   notes:
-    "María isn't one person. She's millions: twelve million with Parkinson's today, twenty-five million by 2050, and over a hundred million living after a stroke. [logo] The answer was always in her voice. VoxWave makes sure you are heard. We are FdiProtocol. Thank you.",
+    "María isn't one person. She's millions: two hundred thousand here in Spain, twelve million in the world, twenty-five million by 2050. [logo] The answer was always in her voice. VoxWave makes sure you are heard. We are FdiProtocol. Thank you.",
   theme: (b) => (b === 1 ? 'light' : 'dark'),
   // María's voice, calm and whole, under the numbers; the page dawns over it at the end.
   wave: () => ({ shape: wave({ y: 790, amp: 40, speed: 0.9 }), paint: coral, opacity: 1, core: 1.6, glow: 1.1, echoes: 0.3, duration: 2600, stagger: 0.3, dir: 1 }),

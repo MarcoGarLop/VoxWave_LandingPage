@@ -186,9 +186,9 @@ function Weekend() {
 // ---------- Build 1: what we learned, and the paper we wrote about it ----------
 const LEARNED = [
   {
-    test: 'Can our model cheat?',
+    test: 'Can silence predict Parkinson’s?',
     big: '0.83',
-    showed: 'AUROC from silence alone: the room gave it away',
+    showed: 'AUROC from silence alone. The model was hearing the room, not her voice.',
     changed: 'We remove the room from every recording.',
   },
   {
@@ -278,7 +278,7 @@ function Learned() {
           What we learned
         </div>
         <h2 className="display" style={{ fontSize: 60, color: NAVY, marginTop: 14 }}>
-          <Words text="We learned so much, we wrote a paper." delay={0.15} wordClass={(w) => (w === 'paper.' ? 'coral' : undefined)} />
+          <Words text="We tested. We learned. We changed." delay={0.15} wordClass={(w) => (w === 'learned.' ? 'coral' : undefined)} />
         </h2>
       </div>
       <div style={{ position: 'absolute', left: 120, top: 270, width: 1040 }}>
@@ -330,7 +330,7 @@ export const S17: SlideDef = {
   builds: 2,
   auto: [12.5],
   notes:
-    "On Thursday we had a box of parts. By one in the morning, a working device. And the replies came in: from Estonia, from Lithuania, from the Navarra Parkinson's Association and from Gregorio Marañón. We learned so much that we wrote a paper. Our model no longer hears the room, it works in English with no retraining, and it measures change, not just yes or no.",
+    "On Thursday we had a box of parts. By one in the morning, a working device. And the replies came in: from Estonia, from Lithuania, from the Navarra Parkinson's Association and from Gregorio Marañón. Then we tested, we learned, and we changed. Silence alone could predict Parkinson's: the model was hearing the room, not her voice, so now we remove the room. Trained only on Spanish, it works in English. And it measures change, not just yes or no. All of it, in our paper.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

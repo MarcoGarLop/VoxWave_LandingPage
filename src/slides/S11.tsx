@@ -28,8 +28,8 @@ const T = {
   line1: 4.2,
   scale: 2.6, // the balance appears
   vox: 3.5, // VoxWave lands on the left pan
-  costs: [4.7], // what the hospital saves lands on the right pan
-  final: 5.9,
+  costs: [4.6, 5.4, 6.1], // what the hospital saves lands on the right pan, block by block
+  final: 7.0,
 };
 
 // ---------- Left: break-even chart ----------
@@ -42,10 +42,17 @@ const py = (p: number) => CH.zero - ((p - BE) / BE) * CH.half; // straight line 
 const PIV = { x: 1390, y: 470 };
 const ARM = 250, HANG = 150;
 const VOX = { w: 150, h: 92 };
-// What optimised monitoring saves the hospital, per patient per month (VoxWave estimate,
-// ≈ €600 a year: below the ≈ €920 a year of the published PKG model, Chaudhuri et al. 2022).
+// What better monitoring saves the hospital, per patient per month. Total ≈ €50 (€600 a year):
+// a conservative estimate, below the published PKG model (≈ €920 a year ≈ €77 a month,
+// Chaudhuri et al. 2022). Split in the proportions of our bottom-up model: avoided emergency
+// admissions (Spain: €4,378 per PD admission, 86% via the ER, Gil-Prieto et al. 2016),
+// in-person visits replaced by the remote report, and fewer falls and fractures.
 const PRICE = 40;
-const COSTS = [{ label: 'Hospital savings', sub: 'emergencies · visits · complications', value: 50, w: 170, h: 116 }];
+const COSTS = [
+  { label: 'Emergency admissions', value: 28, w: 300, h: 58 },
+  { label: 'In-person visits', value: 16, w: 300, h: 42 },
+  { label: 'Falls & fractures', value: 6, w: 300, h: 32 },
+];
 const SAVED = COSTS.reduce((s, c) => s + c.value, 0);
 const RETURN = (SAVED / PRICE).toFixed(2); // 1.25
 const DROP = 0.42; // seconds of free fall
@@ -199,27 +206,16 @@ function Balance({ t }: { t: number }) {
         const y = fall(land, rPan.y, -below - c.h - 4);
         const x = rPan.x - c.w / 2;
         const hit = Math.exp(-Math.pow((t - land) * 5, 2));
-        const big = i === 0;
         return (
           <g key={c.label} opacity={clamp((t - (land - DROP)) / 0.15)}>
-            {big && hit > 0.02 && <ellipse cx={rPan.x} cy={rPan.y + 8} rx={110 + (1 - hit) * 60} ry={14} fill="none" stroke={CORAL} strokeWidth={2} opacity={hit * 0.6} />}
-            <rect x={x} y={y} width={c.w} height={c.h} rx={big ? 14 : 9} fill={CORAL} opacity={big ? 1 : i === 1 ? 0.82 : 0.66} />
-            {big && (
-              <>
-                <rect x={x + 22} y={y + 20} width={8} height={24} rx={2} fill="#fbf9f5" />
-                <rect x={x + 14} y={y + 28} width={24} height={8} rx={2} fill="#fbf9f5" />
-              </>
-            )}
-            <text x={big ? x + 46 : x + c.w / 2} y={big ? y + 40 : y + c.h / 2 + 7} textAnchor={big ? 'start' : 'middle'} fontFamily="Sora, sans-serif" fontWeight={700} fontSize={big ? 20 : 14} fill="#fbf9f5">
-              {big ? 'Saved' : `${c.label} ${eur(c.value)}`}
+            {hit > 0.02 && <ellipse cx={rPan.x} cy={rPan.y + 8} rx={110 + (1 - hit) * 60} ry={14} fill="none" stroke={CORAL} strokeWidth={2} opacity={hit * 0.5} />}
+            <rect x={x} y={y} width={c.w} height={c.h} rx={10} fill={CORAL} opacity={1 - i * 0.14} />
+            <text x={x + 16} y={y + c.h / 2 + 6} fontFamily="Sora, sans-serif" fontWeight={700} fontSize={i === 0 ? 17 : 15} fill="#fbf9f5">
+              {c.label}
             </text>
-            {big && (
-              <>
-                <text x={x + c.w / 2} y={y + 84} textAnchor="middle" fontFamily="Sora, sans-serif" fontWeight={700} fontSize={36} fill="#fbf9f5">
-                  ≈ {eur(c.value)}
-                </text>
-              </>
-            )}
+            <text x={x + c.w - 16} y={y + c.h / 2 + (i === 0 ? 9 : 7)} textAnchor="end" fontFamily="Sora, sans-serif" fontWeight={700} fontSize={i === 0 ? 26 : i === 1 ? 20 : 17} fill="#fbf9f5">
+              €{c.value}
+            </text>
           </g>
         );
       })}
@@ -228,7 +224,7 @@ function Balance({ t }: { t: number }) {
         What the hospital pays
       </text>
       <text x={rPan.x} y={rPan.y + 66} textAnchor="middle" fontFamily="Inter, sans-serif" fontSize={20} fill={INK} opacity={clamp((t - T.costs[0]) / 0.5)}>
-        What it saves
+        What it saves · ≈ €{SAVED}
       </text>
     </svg>
   );
@@ -277,13 +273,16 @@ function Content() {
         </div>
       </motion.div>
       <BreakEven t={t} />
-      <motion.div style={{ position: 'absolute', left: 120, top: 850, width: 780 }} {...rise(T.line0 + 1.6)}>
-        <div className="display" style={{ fontSize: 26, fontWeight: 600, color: NAVY }}>
-          At €40 a patient a month, VoxWave pays for itself at 340.
-        </div>
-        <div className="body" style={{ fontSize: 21, marginTop: 6, color: INK }}>
-          Just 0.17% of patients in Spain.
-        </div>
+      {/* The point of the left side, in big type: a sliver of the market covers our costs. */}
+      <motion.div style={{ position: 'absolute', left: 120, top: 846, width: 800, display: 'flex', alignItems: 'center', gap: 24 }} {...rise(T.line0 + 1.6)}>
+        <span className="number" style={{ fontSize: 96, lineHeight: 1, color: CORAL }}>
+          0.17%
+        </span>
+        <span className="display" style={{ fontSize: 32, fontWeight: 700, color: NAVY, lineHeight: 1.15 }}>
+          of patients in Spain
+          <br />
+          covers all our costs.
+        </span>
       </motion.div>
 
       {/* ---- For the clinic ---- */}
@@ -305,10 +304,10 @@ function Content() {
       <Balance t={t} />
       <motion.div style={{ position: 'absolute', left: 1040, top: 832, width: 790 }} {...rise(T.final)}>
         <div className="display" style={{ fontSize: 25, fontWeight: 600, color: CORAL, lineHeight: 1.25 }}>
-          Catch changes early: fewer emergencies, fewer unplanned visits. VoxWave pays for itself, and then some.
+          Catch changes early: fewer emergency admissions, fewer visits, fewer falls. VoxWave pays for itself, and then some.
         </div>
-        <div className="body" style={{ fontSize: 17, marginTop: 10, color: INK }}>
-          VoxWave estimate, ≈ €600 a patient a year · below published models (≈ €920 a year, Chaudhuri et al. 2022)
+        <div className="body" style={{ fontSize: 16, marginTop: 10, color: INK, lineHeight: 1.4 }}>
+          Conservative estimate · published models: ≈ €77 a month (Chaudhuri et al. 2022) · Spain: €4,378 per admission, 86% via the ER (Gil-Prieto et al. 2016)
         </div>
       </motion.div>
     </div>
@@ -319,7 +318,7 @@ export const S11: SlideDef = {
   id: 'S11',
   builds: 1,
   notes:
-    "And it's built to last. Clinics pay, not grants, and we break even at three hundred and forty patients. For the hospital, the maths is simple: VoxWave costs forty euros a patient a month, and better monitoring saves about fifty. Every euro comes back as one euro twenty-five.",
+    "And it's built to last. Clinics pay, not grants, and we break even at three hundred and forty patients: just zero point one seven percent of patients in Spain covers all our costs. For the hospital, VoxWave costs forty euros a patient a month, and better monitoring saves about fifty: fewer emergency admissions, fewer in-person visits, fewer falls. Every euro comes back as one euro twenty-five.",
 
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
