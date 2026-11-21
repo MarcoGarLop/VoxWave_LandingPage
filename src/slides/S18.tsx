@@ -18,9 +18,9 @@ const CORAL = C.coral;
 const PATHS = [
   {
     k: 'Other languages',
-    big: '≥ 0.93',
-    line: 'Spanish, English and Italian: above 0.9 in all three.',
-    src: 'VoxWave preprint · 2026 · AUROC, trained on all three',
+    big: '0.88',
+    line: 'Average across Spanish, English and Italian.',
+    src: 'VoxWave preprint · 2026 · mean AUROC over the three languages',
   },
   {
     k: 'Other diseases',
@@ -74,7 +74,7 @@ export const S18: SlideDef = {
   id: 'S18',
   builds: 1,
   notes:
-    "And this is just the beginning. Trained on Spanish, English and Italian, our model scores above zero point nine in all three. And more than a hundred million people live after a stroke: voice AI already detects it. One voice model. Many languages. Many diseases.",
+    "And this is just the beginning. Across Spanish, English and Italian, our model averages zero point eight eight. And more than a hundred million people live after a stroke: voice AI already detects it. One voice model. Many languages. Many diseases.",
   theme: () => 'dark',
   // Many voices, braided: the same model listening to more than one language and disease.
   wave: () => ({

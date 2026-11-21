@@ -47,7 +47,7 @@ const VOX = { w: 150, h: 92 };
 // €4,400, Gil-Prieto et al. 2016). VoxWave avoids ≈ 25% of that: ≈ €500. If the real saving is
 // lower, the price adjusts to the results: the hospital never loses money.
 const PRICE = 480;
-const COSTS = [{ label: '25% of €2,000', value: 500, w: 300, h: 100 }];
+const COSTS = [{ label: 'Estimated savings', value: 500, w: 300, h: 100 }];
 const SAVED = COSTS.reduce((s, c) => s + c.value, 0);
 const DROP = 0.42; // seconds of free fall
 const eur = (v: number) => `€${Math.round(v).toLocaleString('en-US')}`;
@@ -296,14 +296,6 @@ function Content() {
         </div>
       </motion.div>
       <Balance t={t} />
-      <motion.div style={{ position: 'absolute', left: 1040, top: 832, width: 790 }} {...rise(T.final)}>
-        <div className="display" style={{ fontSize: 25, fontWeight: 600, color: CORAL, lineHeight: 1.25 }}>
-          VoxWave pays for itself. If the savings come in lower, our price adjusts to the results.
-        </div>
-        <div className="body" style={{ fontSize: 16, marginTop: 10, color: INK, lineHeight: 1.4 }}>
-          Estimate for patients with motor fluctuations (1 in 3): late detection ≈ €2,000 a year in emergencies, admissions and unscheduled visits · one admission ≈ €4,400 (Gil-Prieto et al. 2016)
-        </div>
-      </motion.div>
     </div>
   );
 }
