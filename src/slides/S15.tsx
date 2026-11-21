@@ -227,8 +227,11 @@ function Grow() {
         <div className="mono" style={{ fontSize: 18, color: CORAL }}>
           Where we grow
         </div>
-        <h2 className="display" style={{ fontSize: 76, color: NAVY, marginTop: 12 }}>
-          <Words text="From Madrid to the world." delay={0.2} />
+        <h2 className="display" style={{ fontSize: 76, color: NAVY, marginTop: 12, lineHeight: 1.05 }}>
+          <Words text="Validate in Madrid." delay={0.2} />
+        </h2>
+        <h2 className="display" style={{ fontSize: 76, color: CORAL, lineHeight: 1.05 }}>
+          <Words text="Grow where Spanish is spoken." delay={0.6} />
         </h2>
       </div>
       <div style={{ position: 'absolute', left: 120, right: 120, top: 520, display: 'flex', alignItems: 'flex-start' }}>
@@ -260,7 +263,6 @@ function Grow() {
 function Content({ build }: { build: number }) {
   const t = useElapsed();
   const status = t < T.y2 ? 'Year 1' : t < T.arc0 ? 'Year 2' : 'Year 3';
-  const ended = t >= T.end;
   return (
     <div className="content">
       <div className="mono" style={{ position: 'absolute', left: 120, top: 62, fontSize: 18, color: NAVY, display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -273,15 +275,15 @@ function Content({ build }: { build: number }) {
       <div style={{ position: 'absolute', left: 120, top: 104, opacity: build >= 1 ? 0 : 1, transition: 'opacity 0.5s' }}>
         <AnimatePresence mode="wait">
           <motion.h2
-            key={ended ? 'end' : 'start'}
+            key="road"
             className="display"
-            style={{ fontSize: 54, color: ended ? CORAL : NAVY }}
+            style={{ fontSize: 54, color: NAVY }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8, transition: { duration: 0.3 } }}
             transition={{ duration: 0.6, ease }}
           >
-            {ended ? 'Validate in Madrid. Grow where Spanish is spoken.' : <Words text="Our road." delay={T.head} />}
+            <Words text="Our road." delay={T.head} />
           </motion.h2>
         </AnimatePresence>
       </div>
@@ -304,7 +306,7 @@ export const S15: SlideDef = {
   builds: 2,
   auto: [9.6],
   notes:
-    "Our road. Year one: Madrid. Year two: all of Spain, with the CE mark. Year three: the US Hispanic community, with a model that already speaks Spanish. [grow] From two hundred thousand patients here, to twelve million worldwide.",
+    "Our road. Year one: Madrid. Year two: all of Spain, with the CE mark. Year three: the US Hispanic community. [grow] Validate in Madrid, grow where Spanish is spoken: from two hundred thousand patients here, to twelve million worldwide.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),

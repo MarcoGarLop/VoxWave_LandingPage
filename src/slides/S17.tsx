@@ -4,7 +4,7 @@ import { C, EASE } from '../brand/tokens';
 import type { SlideDef } from '../deck/types';
 import { wave } from '../engine/shapes';
 import { DrawnFormula, prewarmTex } from '../ui/DrawnFormula';
-import { At, Words } from '../ui/motion';
+import { Words } from '../ui/motion';
 
 const ease = EASE as unknown as [number, number, number, number];
 
@@ -312,27 +312,41 @@ function Learned() {
   );
 }
 
-function Content({ build }: { build: number }) {
+function Content() {
   return (
     <div className="content">
-      <At build={build} at={0} until={1}>
-        <Weekend key="weekend" />
-      </At>
-      <At build={build} at={1}>
-        <Learned key="learned" />
-      </At>
+      <Weekend />
+    </div>
+  );
+}
+
+function LearnedContent() {
+  return (
+    <div className="content">
+      <Learned />
     </div>
   );
 }
 
 export const S17: SlideDef = {
   id: 'S17',
-  builds: 2,
-  auto: [12.5],
+  builds: 1,
   notes:
-    "On Thursday we had a box of parts. By one in the morning, a working device. And the replies came in: from Estonia, from Lithuania, from the Navarra Parkinson's Association and from Gregorio Marañón. Then we tested, we learned, and we changed. Silence alone could predict Parkinson's: the model was hearing the room, not her voice, so now we remove the room. Trained only on Spanish, it works in English. And it measures change, not just yes or no. All of it, in our paper.",
+    "On Thursday we had a box of parts. By one in the morning, a working device. And the replies came in: from Estonia, from Lithuania, from the Navarra Parkinson's Association and from Gregorio Marañón.",
   theme: () => 'light',
   wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
   bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),
   Content,
+};
+
+/** What we tested, learned and changed — its own slide, right after the weekend. */
+export const S17B: SlideDef = {
+  id: 'S17B',
+  builds: 1,
+  notes:
+    "Then we tested, we learned, and we changed. Silence alone could predict Parkinson's: the model was hearing the room, not her voice, so now we remove the room. Trained only on Spanish, it works in English. And it measures change, not just yes or no. All of it, in our paper.",
+  theme: () => 'light',
+  wave: () => ({ shape: wave({ y: 540, amp: 30 }), opacity: 0, duration: 1600, stagger: 0 }),
+  bg: () => ({ pool: [0.5, 0.5], poolStrength: 1, warm: 0.6 }),
+  Content: LearnedContent,
 };
